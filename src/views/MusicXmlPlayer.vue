@@ -1,22 +1,31 @@
 <template>
     <div id="player-container">
-      <Score v-bind:xml="this.xml" />
+      <DropZone v-bind:onDrop="receiveLocalFile">
+        <Score v-bind:xml="xml" />
+      </DropZone>
     </div>
 </template>
 
 <script>
 import Score from '../components/Score.vue';
+import DropZone from '../components/DropZone.vue';
 import exampleMxml from '../assets/BrookeWestSample.musicxml';
 
 export default {
   name: 'MxmlPlayer',
   components: {
     Score,
+    DropZone,
   },
   data() {
     return {
       xml: exampleMxml,
     };
+  },
+  methods: {
+    receiveLocalFile(file) {
+      file.text().then((text) => { this.xml = text; });
+    },
   },
 };
 </script>

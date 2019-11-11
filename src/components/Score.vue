@@ -10,6 +10,14 @@ export default {
   props: {
     xml: String,
   },
+  watch: {
+    xml() {
+      const { osmb, xml } = this;
+      if (xml) {
+        osmb.load(xml).then(() => { osmb.render(); });
+      }
+    },
+  },
   data() {
     return {
       osmb: {},
@@ -19,7 +27,9 @@ export default {
     this.osmb = new OpenSheetMusicDisplay('score-container');
 
     const { osmb, xml } = this;
-    osmb.load(xml).then(() => { osmb.render(); });
+    if (xml) {
+      osmb.load(xml).then(() => { osmb.render(); });
+    }
   },
 };
 </script>
