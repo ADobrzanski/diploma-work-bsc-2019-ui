@@ -1,5 +1,6 @@
 <template>
     <div id="player-container">
+      <playback-controls />
       <DropZone v-bind:onDrop="receiveLocalFile">
         <Score v-bind:xml="xml" />
       </DropZone>
@@ -10,12 +11,14 @@
 import Score from '../components/Score.vue';
 import DropZone from '../components/DropZone.vue';
 import exampleMxml from '../assets/BrookeWestSample.musicxml';
+import PlaybackControlsVue from '../components/PlaybackControls.vue';
 
 export default {
   name: 'MxmlPlayer',
   components: {
     Score,
     DropZone,
+    'playback-controls': PlaybackControlsVue,
   },
   data() {
     return {
