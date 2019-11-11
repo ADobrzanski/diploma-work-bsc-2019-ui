@@ -3,7 +3,7 @@
     <playback-button
       class="playback-button"
       icon="step-backward"
-      :onClick="onStepBackward" />
+      :onClick="handleStepBackward" />
     <playback-button
       class="playback-button"
       :icon="playPauseIcon"
@@ -11,15 +11,23 @@
     <playback-button
       class="playback-button"
       icon="stop"
-      :onClick="onStop" />
+      :onClick="handleStop" />
     <playback-button
       class="playback-button"
       icon="step-forward"
-      :onClick="onStepForward" />
+      :onClick="handleStepForward" />
    </div>
 </template>
 
 <script>
+import EventBus from '../event-bus/event-bus';
+import {
+  PLAYBACK_CONTROL_PLAY,
+  PLAYBACK_CONTROL_PAUSE,
+  PLAYBACK_CONTROL_STOP,
+  PLAYBACK_CONTROL_STEP_FORWARD,
+  PLAYBACK_CONTROL_STEP_BACKWARD,
+} from '../event-bus/events';
 import PlaybackButtonVue from './PlaybackButton.vue';
 
 export default {
@@ -49,6 +57,39 @@ export default {
       default: () => null,
     },
   },
+  methods: {
+    handlePlay() {
+      EventBus.$emit(PLAYBACK_CONTROL_PLAY);
+      this.onPlay();
+    },
+    handlePause() {
+      EventBus.$emit(PLAYBACK_CONTROL_PAUSE);
+      this.onPause();
+    },
+    handleStop() {
+      EventBus.$emit(PLAYBACK_CONTROL_STOP);
+      this.onStop();
+    },
+    handleStepForward() {
+      EventBus.$emit(PLAYBACK_CONTROL_STEP_FORWARD);
+      this.onStepForward();
+    },
+    handleStepBackward() {
+      EventBus.$emit(PLAYBACK_CONTROL_STEP_BACKWARD);
+      this.onStepBackward();
+    },
+    togglePlayPause() {
+      const { isPlaying, handlePlay, handlePause } = this;
+
+      if (isPlaying) {
+        this.isPlaying = false;
+        handlePause();
+      } else {
+        this.isPlaying = true;
+        handlePlay();
+      }
+    },
+  },
   computed: {
     playPauseIcon() {
       const { isPlaying } = this;
@@ -59,19 +100,6 @@ export default {
     return {
       isPlaying: false,
     };
-  },
-  methods: {
-    togglePlayPause() {
-      const { isPlaying, onPlay, onPause } = this;
-
-      if (isPlaying) {
-        this.isPlaying = false;
-        onPause();
-      } else {
-        this.isPlaying = true;
-        onPlay();
-      }
-    },
   },
 };
 </script>
