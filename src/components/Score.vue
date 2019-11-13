@@ -1,5 +1,5 @@
 <template>
-  <div id="score-container"></div>
+  <div id="score-container" class="score-container"></div>
 </template>
 
 <script>
@@ -30,8 +30,7 @@ export default {
   methods: {
     cursorStepForward() {
       const { osmb } = this;
-      osmb.cursor.iterator.moveToNext();
-      osmb.render();
+      osmb.cursor.next();
     },
   },
   mounted() {
@@ -45,11 +44,13 @@ export default {
       });
     }
 
-    EventBus.$on(PLAYBACK_CONTROL_STEP_FORWARD, () => this.cursorStepForward());
+    EventBus.$on(PLAYBACK_CONTROL_STEP_FORWARD, () => { this.cursorStepForward(); });
   },
 };
 </script>
 
 <style lang="scss" scoped>
-
+.score-container {
+  width: 800px;
+}
 </style>

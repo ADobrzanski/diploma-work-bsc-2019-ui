@@ -35,48 +35,21 @@ export default {
   components: {
     'playback-button': PlaybackButtonVue,
   },
-  props: {
-    onPlay: {
-      type: Function,
-      default: () => null,
-    },
-    onPause: {
-      type: Function,
-      default: () => null,
-    },
-    onStop: {
-      type: Function,
-      default: () => null,
-    },
-    onStepForward: {
-      type: Function,
-      default: () => null,
-    },
-    onStepBackward: {
-      type: Function,
-      default: () => null,
-    },
-  },
   methods: {
     handlePlay() {
       EventBus.$emit(PLAYBACK_CONTROL_PLAY);
-      this.onPlay();
     },
     handlePause() {
       EventBus.$emit(PLAYBACK_CONTROL_PAUSE);
-      this.onPause();
     },
     handleStop() {
       EventBus.$emit(PLAYBACK_CONTROL_STOP);
-      this.onStop();
     },
     handleStepForward() {
       EventBus.$emit(PLAYBACK_CONTROL_STEP_FORWARD);
-      this.onStepForward();
     },
     handleStepBackward() {
       EventBus.$emit(PLAYBACK_CONTROL_STEP_BACKWARD);
-      this.onStepBackward();
     },
     togglePlayPause() {
       const { isPlaying, handlePlay, handlePause } = this;
