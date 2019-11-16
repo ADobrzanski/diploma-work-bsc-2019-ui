@@ -1,6 +1,7 @@
 <template>
    <div class="playback-controls">
     <playback-button
+      v-if="false"
       class="playback-button"
       icon="step-backward"
       :onClick="handleStepBackward" />
