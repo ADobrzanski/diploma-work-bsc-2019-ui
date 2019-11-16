@@ -91,5 +91,13 @@ export default {
 
   .playback-button {
     margin: 0 10px;
+
+    &:focus {
+      outline: 0;
+    }
+
+    &:active {
+      color: gray;
+    }
   }
 </style>
