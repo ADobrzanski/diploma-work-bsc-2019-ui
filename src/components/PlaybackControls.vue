@@ -1,9 +1,10 @@
 <template>
    <div class="playback-controls">
     <playback-button
+      v-if="false"
       class="playback-button"
       icon="step-backward"
-      :onClick="onStepBackward" />
+      :onClick="handleStepBackward" />
     <playback-button
       class="playback-button"
       :icon="playPauseIcon"
@@ -11,15 +12,23 @@
     <playback-button
       class="playback-button"
       icon="stop"
-      :onClick="onStop" />
+      :onClick="handleStop" />
     <playback-button
       class="playback-button"
       icon="step-forward"
-      :onClick="onStepForward" />
+      :onClick="handleStepForward" />
    </div>
 </template>
 
 <script>
+import EventBus from '../event-bus/event-bus';
+import {
+  PLAYBACK_CONTROL_PLAY,
+  PLAYBACK_CONTROL_PAUSE,
+  PLAYBACK_CONTROL_STOP,
+  PLAYBACK_CONTROL_STEP_FORWARD,
+  PLAYBACK_CONTROL_STEP_BACKWARD,
+} from '../event-bus/events';
 import PlaybackButtonVue from './PlaybackButton.vue';
 
 export default {
@@ -27,26 +36,32 @@ export default {
   components: {
     'playback-button': PlaybackButtonVue,
   },
-  props: {
-    onPlay: {
-      type: Function,
-      default: () => null,
+  methods: {
+    handlePlay() {
+      EventBus.$emit(PLAYBACK_CONTROL_PLAY);
     },
-    onPause: {
-      type: Function,
-      default: () => null,
+    handlePause() {
+      EventBus.$emit(PLAYBACK_CONTROL_PAUSE);
     },
-    onStop: {
-      type: Function,
-      default: () => null,
+    handleStop() {
+      EventBus.$emit(PLAYBACK_CONTROL_STOP);
     },
-    onStepForward: {
-      type: Function,
-      default: () => null,
+    handleStepForward() {
+      EventBus.$emit(PLAYBACK_CONTROL_STEP_FORWARD);
     },
-    onStepBackward: {
-      type: Function,
-      default: () => null,
+    handleStepBackward() {
+      EventBus.$emit(PLAYBACK_CONTROL_STEP_BACKWARD);
+    },
+    togglePlayPause() {
+      const { isPlaying, handlePlay, handlePause } = this;
+
+      if (isPlaying) {
+        this.isPlaying = false;
+        handlePause();
+      } else {
+        this.isPlaying = true;
+        handlePlay();
+      }
     },
   },
   computed: {
@@ -59,19 +74,6 @@ export default {
     return {
       isPlaying: false,
     };
-  },
-  methods: {
-    togglePlayPause() {
-      const { isPlaying, onPlay, onPause } = this;
-
-      if (isPlaying) {
-        this.isPlaying = false;
-        onPause();
-      } else {
-        this.isPlaying = true;
-        onPlay();
-      }
-    },
   },
 };
 </script>
@@ -89,5 +91,13 @@ export default {
 
   .playback-button {
     margin: 0 10px;
+
+    &:focus {
+      outline: 0;
+    }
+
+    &:active {
+      color: gray;
+    }
   }
 </style>
