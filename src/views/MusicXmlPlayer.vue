@@ -8,7 +8,7 @@
 </template>
 
 <script>
-import Score from '../components/Score.vue';
+import Score from '../components/Score/Score.vue';
 import DropZone from '../components/DropZone.vue';
 import exampleMxml from '../assets/BrookeWestSample.musicxml';
 import PlaybackControlsVue from '../components/PlaybackControls.vue';

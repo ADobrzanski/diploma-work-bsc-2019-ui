@@ -1,14 +1,30 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
+import * as R from 'ramda';
 
 Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
+    score: {
+      isReady: false,
+    },
   },
   mutations: {
+    SET_SCORE_READY(state, isReady) {
+      // eslint-disable-next-line no-param-reassign
+      state.score = R.assoc('isReady', isReady)(state.score);
+    },
   },
   actions: {
+    setScoreReady({ commit }, isReady) {
+      commit('SET_SCORE_READY', isReady);
+    },
+  },
+  getters: {
+    isScoreReady(state) {
+      return R.path(['score', 'isReady'], state);
+    },
   },
   modules: {
   },
