@@ -15,6 +15,7 @@ import {
 } from '../../event-bus/events';
 import {
   mapOsmdToVerticalEntries,
+  playVerticalEntry,
 } from './playbackHelpers';
 
 export default {
@@ -56,8 +57,8 @@ export default {
       this.setScoreReady(false);
       this.loadSheetFromProps()
         .then(() => {
-          this.prepareDataForPlayback();
           this.osmd.render();
+          this.prepareDataForPlayback();
           this.setScoreReady(true);
         })
         .catch(err => console.log(err.message));
@@ -94,8 +95,17 @@ export default {
     pausePlayback() {
       clearTimeout(this.playback);
     },
+    stopPlayback() {
+      this.cursorReset();
+      this.currentEntryIndex = -1;
+    },
     doPlaybackStep() {
+      if (this.currentEntryIndex === this.verticalEntries.length) {
+        this.pausePlayback();
+        this.stopPlayback();
+      }
       this.currentEntryIndex += 1;
+      playVerticalEntry(this.verticalEntries[this.currentEntryIndex]);
       const timeoutToNextEntry = this.verticalEntries[this.currentEntryIndex].timeToNext;
       this.playback = setTimeout(() => {
         this.cursorStepForward();

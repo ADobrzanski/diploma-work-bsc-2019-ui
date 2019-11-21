@@ -8,7 +8,7 @@
     <playback-button
       class="playback-button"
       :icon="playPauseIcon"
-      :onClick="togglePlayPause" />
+      :onClick="toggleIsPlaying" />
     <playback-button
       class="playback-button"
       icon="stop"
@@ -21,6 +21,7 @@
 </template>
 
 <script>
+import { mapGetters, mapActions } from 'vuex';
 import EventBus from '../event-bus/event-bus';
 import {
   PLAYBACK_CONTROL_PLAY,
@@ -36,7 +37,30 @@ export default {
   components: {
     'playback-button': PlaybackButtonVue,
   },
+  computed: {
+    ...mapGetters({
+      isPlaying: 'isScorePlaying',
+    }),
+    playPauseIcon() {
+      const { isPlaying } = this;
+      return isPlaying ? 'pause' : 'play';
+    },
+  },
+  watch: {
+    isPlaying() {
+      const { isPlaying, handlePlay, handlePause } = this;
+
+      if (isPlaying) {
+        handlePlay();
+      } else {
+        handlePause();
+      }
+    },
+  },
   methods: {
+    ...mapActions({
+      setIsPlayingTo: 'setScorePlaying',
+    }),
     handlePlay() {
       EventBus.$emit(PLAYBACK_CONTROL_PLAY);
     },
@@ -52,28 +76,10 @@ export default {
     handleStepBackward() {
       EventBus.$emit(PLAYBACK_CONTROL_STEP_BACKWARD);
     },
-    togglePlayPause() {
-      const { isPlaying, handlePlay, handlePause } = this;
-
-      if (isPlaying) {
-        this.isPlaying = false;
-        handlePause();
-      } else {
-        this.isPlaying = true;
-        handlePlay();
-      }
+    toggleIsPlaying() {
+      const { isPlaying, setIsPlayingTo } = this;
+      setIsPlayingTo(!isPlaying);
     },
-  },
-  computed: {
-    playPauseIcon() {
-      const { isPlaying } = this;
-      return isPlaying ? 'pause' : 'play';
-    },
-  },
-  data() {
-    return {
-      isPlaying: false,
-    };
   },
 };
 </script>
