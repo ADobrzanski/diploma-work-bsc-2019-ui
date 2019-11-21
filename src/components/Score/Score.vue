@@ -84,6 +84,10 @@ export default {
     cursorStepForward() {
       const { osmd } = this;
       osmd.cursor.next();
+      if (this.currentEntryIndex < this.verticalEntries.length + 1) {
+        this.currentEntryIndex += 1;
+        playVerticalEntry(this.verticalEntries[this.currentEntryIndex]);
+      }
     },
     cursorReset() {
       const { osmd } = this;
