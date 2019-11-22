@@ -49,9 +49,10 @@ export default {
   methods: {
     ...mapActions([
       'setScoreReady',
+      'setScorePlaying',
     ]),
     initializeOSMD() {
-      this.osmd = new OpenSheetMusicDisplay('score-container');
+      this.osmd = new OpenSheetMusicDisplay('score-container', { followCursor: true });
     },
     initializeSheetData() {
       this.setScoreReady(false);
@@ -77,7 +78,7 @@ export default {
     },
     registerEventListeners() {
       EventBus.$on(PLAYBACK_CONTROL_STEP_FORWARD, () => { this.cursorStepForward(); });
-      EventBus.$on(PLAYBACK_CONTROL_STOP, () => { this.cursorReset(); });
+      EventBus.$on(PLAYBACK_CONTROL_STOP, () => { this.stopPlayback(); });
       EventBus.$on(PLAYBACK_CONTROL_PLAY, () => { this.startPlayback(); });
       EventBus.$on(PLAYBACK_CONTROL_PAUSE, () => { this.pausePlayback(); });
     },
@@ -100,19 +101,21 @@ export default {
       clearTimeout(this.playback);
     },
     stopPlayback() {
+      clearTimeout(this.playback);
       this.cursorReset();
       this.currentEntryIndex = -1;
+      this.setScorePlaying(false);
     },
     doPlaybackStep() {
+      const { osmd } = this;
+      this.currentEntryIndex += 1;
       if (this.currentEntryIndex === this.verticalEntries.length) {
-        this.pausePlayback();
         this.stopPlayback();
       }
-      this.currentEntryIndex += 1;
       playVerticalEntry(this.verticalEntries[this.currentEntryIndex]);
       const timeoutToNextEntry = this.verticalEntries[this.currentEntryIndex].timeToNext;
       this.playback = setTimeout(() => {
-        this.cursorStepForward();
+        osmd.cursor.next();
         this.doPlaybackStep();
       }, timeoutToNextEntry);
     },

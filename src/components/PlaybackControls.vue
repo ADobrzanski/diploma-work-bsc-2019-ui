@@ -68,7 +68,9 @@ export default {
       EventBus.$emit(PLAYBACK_CONTROL_PAUSE);
     },
     handleStop() {
+      const { setIsPlayingTo } = this;
       EventBus.$emit(PLAYBACK_CONTROL_STOP);
+      setIsPlayingTo(false);
     },
     handleStepForward() {
       EventBus.$emit(PLAYBACK_CONTROL_STEP_FORWARD);
