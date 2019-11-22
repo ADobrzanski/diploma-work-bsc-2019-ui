@@ -9,9 +9,6 @@ import { OpenSheetMusicDisplay } from 'opensheetmusicdisplay';
 import EventBus from '../../event-bus/event-bus';
 import {
   PLAYBACK_CONTROL_STEP_FORWARD,
-  PLAYBACK_CONTROL_STOP,
-  PLAYBACK_CONTROL_PLAY,
-  PLAYBACK_CONTROL_PAUSE,
 } from '../../event-bus/events';
 import {
   mapOsmdToVerticalEntries,
@@ -25,12 +22,20 @@ export default {
   },
   computed: {
     ...mapGetters({
-      isReady: 'isScoreReady',
+      isPlaying: 'isPlaybackPlaying',
+      isStopped: 'isPlaybackStopped',
     }),
   },
   watch: {
     xml() {
       this.initializeSheetData();
+    },
+    isPlaying() {
+      if (this.isPlaying) this.startPlayback();
+      else this.pausePlayback();
+    },
+    isStopped() {
+      if (this.isStopped) this.stopPlayback();
     },
   },
   data() {
@@ -47,10 +52,10 @@ export default {
     this.registerEventListeners();
   },
   methods: {
-    ...mapActions([
-      'setScoreReady',
-      'setScorePlaying',
-    ]),
+    ...mapActions({
+      setScoreReady: 'setScoreReady',
+      vuexStopPlayback: 'stopPlayback',
+    }),
     initializeOSMD() {
       this.osmd = new OpenSheetMusicDisplay('score-container', { followCursor: true });
     },
@@ -78,9 +83,6 @@ export default {
     },
     registerEventListeners() {
       EventBus.$on(PLAYBACK_CONTROL_STEP_FORWARD, () => { this.cursorStepForward(); });
-      EventBus.$on(PLAYBACK_CONTROL_STOP, () => { this.stopPlayback(); });
-      EventBus.$on(PLAYBACK_CONTROL_PLAY, () => { this.startPlayback(); });
-      EventBus.$on(PLAYBACK_CONTROL_PAUSE, () => { this.pausePlayback(); });
     },
     cursorStepForward() {
       const { osmd } = this;
@@ -104,7 +106,7 @@ export default {
       clearTimeout(this.playback);
       this.cursorReset();
       this.currentEntryIndex = -1;
-      this.setScorePlaying(false);
+      this.vuexStopPlayback();
     },
     doPlaybackStep() {
       const { osmd } = this;

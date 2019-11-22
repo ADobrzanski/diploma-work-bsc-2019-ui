@@ -12,7 +12,7 @@
     <playback-button
       class="playback-button"
       icon="stop"
-      :onClick="handleStop" />
+      :onClick="stopPlayback" />
     <playback-button
       class="playback-button"
       icon="step-forward"
@@ -24,8 +24,6 @@
 import { mapGetters, mapActions } from 'vuex';
 import EventBus from '../event-bus/event-bus';
 import {
-  PLAYBACK_CONTROL_PLAY,
-  PLAYBACK_CONTROL_PAUSE,
   PLAYBACK_CONTROL_STOP,
   PLAYBACK_CONTROL_STEP_FORWARD,
   PLAYBACK_CONTROL_STEP_BACKWARD,
@@ -39,38 +37,22 @@ export default {
   },
   computed: {
     ...mapGetters({
-      isPlaying: 'isScorePlaying',
+      isPlaying: 'isPlaybackPlaying',
     }),
     playPauseIcon() {
       const { isPlaying } = this;
       return isPlaying ? 'pause' : 'play';
     },
   },
-  watch: {
-    isPlaying() {
-      const { isPlaying, handlePlay, handlePause } = this;
-
-      if (isPlaying) {
-        handlePlay();
-      } else {
-        handlePause();
-      }
-    },
-  },
   methods: {
-    ...mapActions({
-      setIsPlayingTo: 'setScorePlaying',
-    }),
-    handlePlay() {
-      EventBus.$emit(PLAYBACK_CONTROL_PLAY);
-    },
-    handlePause() {
-      EventBus.$emit(PLAYBACK_CONTROL_PAUSE);
-    },
+    ...mapActions([
+      'startPlayback',
+      'pausePlayback',
+      'stopPlayback',
+    ]),
     handleStop() {
-      const { setIsPlayingTo } = this;
+      this.stopPlayback();
       EventBus.$emit(PLAYBACK_CONTROL_STOP);
-      setIsPlayingTo(false);
     },
     handleStepForward() {
       EventBus.$emit(PLAYBACK_CONTROL_STEP_FORWARD);
@@ -79,8 +61,12 @@ export default {
       EventBus.$emit(PLAYBACK_CONTROL_STEP_BACKWARD);
     },
     toggleIsPlaying() {
-      const { isPlaying, setIsPlayingTo } = this;
-      setIsPlayingTo(!isPlaying);
+      const { isPlaying } = this;
+      if (isPlaying) {
+        this.pausePlayback();
+      } else {
+        this.startPlayback();
+      }
     },
   },
 };
