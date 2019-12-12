@@ -1,5 +1,3 @@
-import EventBus from '../../event-bus/event-bus';
-import { SCORE_PLAY_NOTE } from './events';
 // eslint-disable-next-line import/prefer-default-export
 export const mapOsmdToVerticalEntries = (osmd) => {
   const { cursor } = osmd;
@@ -8,11 +6,16 @@ export const mapOsmdToVerticalEntries = (osmd) => {
   while (!cursor.Iterator.EndReached) {
     const newEntry = {
       timestamp: cursor.Iterator.CurrentSourceTimestamp.realValue * 1000 * 4,
+      longestNote: Math.max(...cursor.NotesUnderCursor()
+        .filter(note => !note.isRest())
+        .map(({ Length }) => Length.realValue * 1000 * 4)),
       timeToNext: -1,
       notes: cursor.NotesUnderCursor()
-        .map(({ halfTone, Length }) => ({
-          note: halfTone + 12,
-          duration: Length.realValue * 1000 * 4,
+        .filter(note => !note.isRest())
+        .map(note => ({
+          note: note.halfTone + 12,
+          duration: note.Length.realValue * 1000 * 4,
+          ref: note,
         })),
     };
 
@@ -27,10 +30,4 @@ export const mapOsmdToVerticalEntries = (osmd) => {
   }
 
   return verticalEntries;
-};
-
-export const playVerticalEntry = (entry) => {
-  entry.notes.forEach((note) => {
-    EventBus.$emit(SCORE_PLAY_NOTE, note);
-  });
 };

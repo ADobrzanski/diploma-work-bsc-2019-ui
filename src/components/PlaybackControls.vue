@@ -22,12 +22,6 @@
 
 <script>
 import { mapGetters, mapActions } from 'vuex';
-import EventBus from '../event-bus/event-bus';
-import {
-  PLAYBACK_CONTROL_STOP,
-  PLAYBACK_CONTROL_STEP_FORWARD,
-  PLAYBACK_CONTROL_STEP_BACKWARD,
-} from '../event-bus/events';
 import PlaybackButtonVue from './PlaybackButton.vue';
 
 export default {
@@ -49,23 +43,22 @@ export default {
       'startPlayback',
       'pausePlayback',
       'stopPlayback',
+      'increaseScoreCurrentEntryId',
     ]),
     handleStop() {
       this.stopPlayback();
-      EventBus.$emit(PLAYBACK_CONTROL_STOP);
     },
     handleStepForward() {
-      EventBus.$emit(PLAYBACK_CONTROL_STEP_FORWARD);
+      this.increaseScoreCurrentEntryId();
     },
     handleStepBackward() {
-      EventBus.$emit(PLAYBACK_CONTROL_STEP_BACKWARD);
     },
     toggleIsPlaying() {
       const { isPlaying } = this;
       if (isPlaying) {
-        this.pausePlayback();
+        this.pausePlayback({ timestamp: performance.now() });
       } else {
-        this.startPlayback();
+        this.startPlayback({ timestamp: performance.now() });
       }
     },
   },
