@@ -6,6 +6,7 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "test:unit": "vue-cli-service test:unit",
+    "test:unit-watchAll": "vue-cli-service test:unit --watchAll --no-cache",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
@@ -32,8 +33,10 @@
     "@vue/eslint-config-airbnb": "^4.0.0",
     "@vue/test-utils": "1.0.0-beta.29",
     "babel-eslint": "^10.0.3",
+    "canvas": "^2.6.0",
     "eslint": "^5.16.0",
     "eslint-plugin-vue": "^5.0.0",
+    "jest-raw-loader": "^1.0.1",
     "lint-staged": "^9.4.2",
     "sass": "^1.19.0",
     "sass-loader": "^8.0.0",

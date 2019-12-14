@@ -1,3 +1,4 @@
+import * as R from 'ramda';
 // eslint-disable-next-line import/prefer-default-export
 export const mapOsmdToVerticalEntries = (osmd) => {
   const { cursor } = osmd;
@@ -30,4 +31,34 @@ export const mapOsmdToVerticalEntries = (osmd) => {
   }
 
   return verticalEntries;
+};
+
+const getCursorTimestamp = R.path(['Iterator', 'CurrentSourceTimestamp', 'realValue']);
+export const getAudacity = R.and(
+  R.path(['voiceEntry', 'parentVoice', 'audible']),
+  note => !note.isRest(),
+);
+
+export const mapOsmdToNotes = (osmd) => {
+  const { cursor } = osmd;
+  const notes = [];
+
+  const lengthLens = R.lensPath(['length', 'realValue']);
+
+  while (!cursor.Iterator.EndReached) {
+    const timestamp = getCursorTimestamp(cursor);
+    // eslint-disable-next-line no-loop-func
+    R.chain(note => R.pipe(
+      R.pick(['halfTone']),
+      R.assoc('length', R.view(lengthLens)(note)),
+      R.assoc('timestamp', timestamp),
+      R.assoc('audible', getAudacity(note)),
+      R.assoc('ref', note),
+      (n) => { notes.push(n); },
+    )(note))(cursor.NotesUnderCursor());
+
+    cursor.next();
+  }
+
+  return notes;
 };
