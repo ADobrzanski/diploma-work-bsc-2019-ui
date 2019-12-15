@@ -188,7 +188,7 @@ export default {
       )(notes))(visibleEntries);
       */
 
-      if (R.symmetricDifference(this.playbackActiveNotes, activeNotes)) {
+      if (!R.isEmpty(R.symmetricDifference(this.playbackActiveNotes, activeNotes))) {
         this.setPlaybackActiveNotes(activeNotes);
       }
 
