@@ -49,7 +49,7 @@ export default {
         + this.playbackStartTimestamp
         - performance.now(); */
 
-      if (performance.now() >= this.nextHopAt) {
+      if (this.AudioContext.currentTime >= this.nextHopAt) {
         this.increaseScoreCurrentEntryId();
         this.nextHopAt += this.scoreCurrentEntry.timeToNext;
       }

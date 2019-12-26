@@ -124,6 +124,12 @@ export default {
     pxToMs(px) {
       return px * 250 / 50;
     },
+    sToPx(ms) {
+      return ms * 50 / 250 * 1000;
+    },
+    pxToS(px) {
+      return px * 250 / 50 * 1000;
+    },
     extractVisibleNotes(start, end) {
       return this.scoreEntries.filter(entry => entry.timestamp >= start && entry.timestamp <= end);
     },
@@ -146,26 +152,29 @@ export default {
       context.clearRect(0, 0, context.canvas.width, context.canvas.height);
     },
     translateToScoreTimestamp() {
-      const { context, msToPx } = this;
+      const { context, sToPx } = this;
 
-      context.translate(0, msToPx(this.playbackTimestamp));
+      context.translate(0, sToPx(this.playbackTimestamp));
     },
     translateByTimeElapsed() {
-      const { context, msToPx } = this;
+      const { context, sToPx } = this;
 
       if (this.isPlaybackPlaying) {
-        context.translate(0, msToPx(
-          performance.now() - this.playbackStartTimestamp,
+        context.translate(0, sToPx(
+          this.AudioContext.currentTime - this.playbackStartTimestamp,
         ));
       }
     },
     getVisibleEntries() {
-      const { pxToMs, context } = this;
+      const { pxToS, context } = this;
       let timeFromStart = 0;
-      if (this.isPlaybackPlaying) timeFromStart = (performance.now() - this.playbackStartTimestamp);
+      if (this.isPlaybackPlaying) {
+        timeFromStart = this.AudioContext.currentTime
+          - this.playbackStartTimestamp;
+      }
 
       const windowStart = this.playbackTimestamp + timeFromStart;
-      const windowEnd = windowStart + pxToMs(context.canvas.height);
+      const windowEnd = windowStart + pxToS(context.canvas.height);
 
       const visibleEntries = this.scoreEntries.filter(
         ({ timestamp, longestNote }) => timestamp < windowEnd
@@ -195,7 +204,7 @@ export default {
       return visibleEntries;
     },
     drawAllDroplets() {
-      const { msToPx, context, dropletSchemas } = this;
+      const { sToPx, context, dropletSchemas } = this;
 
       const blacks = [];
       const visibleEntries = this.getVisibleEntries();
@@ -208,8 +217,8 @@ export default {
             return;
           }
           context.roundRect(
-            dropletSchemas[noteVal].offset, -msToPx(timestamp),
-            dropletSchemas[noteVal].width, -msToPx(duration) + 2,
+            dropletSchemas[noteVal].offset, -sToPx(timestamp),
+            dropletSchemas[noteVal].width, -sToPx(duration) + 2,
             4,
           );
           this.context.fillStyle = '#5CDB95';
@@ -220,8 +229,8 @@ export default {
       blacks.forEach((note) => {
         const { note: noteVal, duration, timestamp } = note;
         context.roundRect(
-          dropletSchemas[noteVal].offset, -msToPx(timestamp),
-          dropletSchemas[noteVal].width, -msToPx(duration) + 2,
+          dropletSchemas[noteVal].offset, -sToPx(timestamp),
+          dropletSchemas[noteVal].width, -sToPx(duration) + 2,
           4,
         );
         this.context.fillStyle = '#2e6d4a';

@@ -5,72 +5,92 @@
 <script>
 import * as R from 'ramda';
 
-import { mapGetters, mapActions } from 'vuex';
 import Soundfont from 'soundfont-player';
-// import EventBus from '../event-bus/event-bus';
-// import { SCORE_PLAY_NOTE } from './Score/events';
+import { mapNotesToSchedulable, filterForScheduleReady } from './Player/helpers';
 
 export default {
   name: 'soundfont-player',
+  props: {
+    isPlaying: {
+      type: Boolean,
+      default: false,
+    },
+    notes: {
+      type: Array,
+      default: () => [],
+    },
+    timestamp: {
+      type: Number,
+      default: 0,
+    },
+    startTimestamp: {
+      type: Number,
+      default: 0,
+    },
+    delay: {
+      type: Number,
+      default: 0,
+    },
+    gain: {
+      type: Number,
+      default: 1,
+    },
+    immediates: {
+      type: Array,
+      default: () => [],
+    },
+    audioContext: {
+      default: () => {
+        window.AudioContext = window.AudioContext || window.webkitAudioContext;
+        return new AudioContext();
+      },
+    },
+  },
   data() {
     return ({
-      AudioContext: {},
+      mInterval: null,
       piano: {},
-      rawNotes: [],
-      scheduableNotes: [],
     });
   },
   computed: {
-    ...mapGetters([
-      'scoreEntries',
-      'isPlaybackPlaying',
-      'playbackTimestamp',
-      'playbackStartTimestamp',
-      'playbackActiveNotes',
-    ]),
+    scheduable() {
+      return R.pipe(
+        R.filter(R.prop('audible')),
+        mapNotesToSchedulable,
+        R.sortBy(R.prop('time')),
+      )(this.notes);
+    },
+    scheduleReady() {
+      const filteder = filterForScheduleReady(this.scheduable, this.timestamp);
+      const altered = R.map(R.over(R.lensProp('time'), R.flip(R.subtract)(this.timestamp)))(filteder);
+      return altered;
+    },
+    songLength() {
+      const lastNote = R.last(this.scheduable);
+      return lastNote.time + lastNote.duration;
+    },
   },
   watch: {
-    scoreEntries(entries) {
-      this.rawNotes = this.mapEntriesToRawNotes(entries);
-      this.scheduableNotes = this.mapRawNotesToScheduable();
-    },
-    playbackTimestamp() {
-      this.scheduableNotes = this.mapRawNotesToScheduable();
-    },
-    isPlaybackPlaying(isPlaying) {
-      if (isPlaying) {
-        this.piano.schedule(
-          this.AudioContext.currentTime,
-          this.scheduableNotes,
-        );
+    isPlaying(playing) {
+      if (playing) {
+        this.play();
       } else {
-        this.piano.stop();
+        this.pause();
       }
     },
   },
   mounted() {
     this.initInstrument();
     this.initMidiCapture();
-    this.registerEventListeners();
   },
   methods: {
-    ...mapActions(['setPlaybackActiveNotes']),
     initInstrument() {
-      const AudioContext = window.AudioContext || window.webkitAudioContext;
-      this.AudioContext = new AudioContext();
       Soundfont
-        .instrument(this.AudioContext, 'acoustic_grand_piano', { soundfont: 'MusyngKite' })
-        .then((soundfont) => {
-          this.piano = soundfont;
-          /* this.piano.schedule(AudioContext.currentTime, [
-            { time: -1, note: 37 },
-            { time: 2, note: 69 },
-          ]); */
-        });
+        .instrument(this.audioContext, 'acoustic_grand_piano', { soundfont: 'MusyngKite' })
+        .then((soundfont) => { this.piano = soundfont; });
     },
     initMidiCapture() {
       navigator.requestMIDIAccess().then((midiAccess) => {
-        console.log(midiAccess.inputs);
         const handle = ({ data }) => {
           switch (data[0]) {
             case 144:
@@ -89,7 +109,7 @@ export default {
               break;
           }
         };
-/* eslint-disable */
+          /* eslint-disable */
         	const midi = midiAccess; // this is our raw MIDI data, inputs, outputs, and sysex status
           var inputs = midi.inputs.values();
         // loop over all available inputs and listen for any MIDI input
@@ -99,37 +119,48 @@ export default {
         /* eslint-enable */
       });
     },
-    registerEventListeners() {
-      // EventBus.$on(SCORE_PLAY_NOTE, this.playNoteListener);
-    },
     playNoteListener(payload) {
-      const { piano, AudioContext } = this;
+      const { piano, audioContext } = this;
       const {
         note,
         when = 0,
         ...options
       } = payload;
 
-      piano.play(note, when + AudioContext.currentTime, options);
+      piano.play(note, when + audioContext.currentTime, options);
     },
-    mapEntriesToRawNotes: R.chain(
-      entry => R.map(
-        R.assoc('time', entry.timestamp),
-        R.prop('notes')(entry),
-      ),
-    ),
-    mapRawNotesToScheduable() {
-      const isRelevant = R.lte(this.playbackTimestamp);
-      const timeLens = R.lensProp('time');
-      /* eslint-disable no-underscore-dangle */
-      return R.pipe(
-        R.filter(R.propSatisfies(isRelevant, 'time')),
-        R.map(R.over(
-          timeLens,
-          time => (time - this.playbackTimestamp) / 1000,
-        )),
-      )(this.rawNotes);
-      /* eslint-enable */
+    now() {
+      return this.audioContext.currentTime;
+    },
+    play() {
+      this.piano.schedule(
+        this.startTimestamp,
+        this.scheduleReady,
+      );
+      this.scheduleFinish();
+    },
+    pause() {
+      this.piano.stop();
+      this.cancelFinishTimeout();
+    },
+    scheduleFinish() {
+      this.mInterval = setInterval(
+        () => { this.awaitSongEnd(); },
+        200,
+      );
+    },
+    cancelFinishTimeout() {
+      clearInterval(this.mInterval);
+    },
+    awaitSongEnd() {
+      const deltaTime = this.now() - this.startTimestamp;
+      const timeInSong = this.timestamp + deltaTime;
+
+      if (timeInSong >= this.songLength) {
+        this.piano.stop();
+        this.$emit('endReached');
+        this.cancelFinishTimeout();
+      }
     },
   },
 };

@@ -6,16 +6,16 @@ export const mapOsmdToVerticalEntries = (osmd) => {
 
   while (!cursor.Iterator.EndReached) {
     const newEntry = {
-      timestamp: cursor.Iterator.CurrentSourceTimestamp.realValue * 1000 * 4,
+      timestamp: cursor.Iterator.CurrentSourceTimestamp.realValue * 4,
       longestNote: Math.max(...cursor.NotesUnderCursor()
         .filter(note => !note.isRest())
-        .map(({ Length }) => Length.realValue * 1000 * 4)),
+        .map(({ Length }) => Length.realValue * 4)),
       timeToNext: -1,
       notes: cursor.NotesUnderCursor()
         .filter(note => !note.isRest())
         .map(note => ({
           note: note.halfTone + 12,
-          duration: note.Length.realValue * 1000 * 4,
+          duration: note.Length.realValue * 4,
           ref: note,
         })),
     };
@@ -50,8 +50,9 @@ export const mapOsmdToNotes = (osmd) => {
     // eslint-disable-next-line no-loop-func
     R.chain(note => R.pipe(
       R.pick(['halfTone']),
-      R.assoc('length', R.view(lengthLens)(note)),
-      R.assoc('timestamp', timestamp),
+      R.over(R.lensProp('halfTone'), R.add(12)),
+      R.assoc('length', R.view(lengthLens)(note) * 4),
+      R.assoc('timestamp', timestamp * 4),
       R.assoc('audible', getAudacity(note)),
       R.assoc('ref', note),
       (n) => { notes.push(n); },
@@ -60,5 +61,6 @@ export const mapOsmdToNotes = (osmd) => {
     cursor.next();
   }
 
+  cursor.reset();
   return notes;
 };

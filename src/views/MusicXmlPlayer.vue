@@ -1,8 +1,8 @@
 <template>
     <div id="player-container">
-      <soundfont-player />
+      <player />
       <playback-controls />
-      <DropZone v-bind:onDrop="receiveLocalFile">
+      <DropZone :onDrop="receiveLocalFile">
         <score-animator>
           <Score v-bind:xml="xml" />
         </score-animator>
@@ -21,7 +21,7 @@ import ScoreAnimator from '../components/Score/ScoreAnimator.vue';
 import DropZone from '../components/DropZone.vue';
 import exampleMxml from '../assets/BrookeWestSample.musicxml';
 import PlaybackControlsVue from '../components/PlaybackControls.vue';
-import SoundfontPlayer from '../components/SoundfontPlayer.vue';
+import Player from '../components/Player/Player.vue';
 import Waterfall from '../components/Waterfall/Waterfall.vue';
 import PianoKeyboard from '../components/PianoKeyboard/index.vue';
 
@@ -32,7 +32,7 @@ export default {
     'score-animator': ScoreAnimator,
     DropZone,
     'playback-controls': PlaybackControlsVue,
-    'soundfont-player': SoundfontPlayer,
+    Player,
     waterfall: Waterfall,
     'piano-keyboard': PianoKeyboard,
   },

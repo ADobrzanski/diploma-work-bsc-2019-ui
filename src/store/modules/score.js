@@ -4,6 +4,7 @@ export default {
   state: {
     isReady: false,
     entries: [],
+    notes: [],
     entryId: 0,
   },
   mutations: {
@@ -14,6 +15,10 @@ export default {
     SET_SCORE_ENTRIES(state, entries) {
       // eslint-disable-next-line no-param-reassign
       state.entries = entries;
+    },
+    SET_SCORE_NOTES(state, notes) {
+      // eslint-disable-next-line no-param-reassign
+      state.notes = notes;
     },
     SET_SCORE_CURRENT_ENTRY_ID(state, entryId) {
       // eslint-disable-next-line no-param-reassign
@@ -26,6 +31,9 @@ export default {
     },
     setScoreEntries({ commit }, entries) {
       commit('SET_SCORE_ENTRIES', entries);
+    },
+    setScoreNotes({ commit }, notes) {
+      commit('SET_SCORE_NOTES', notes);
     },
     setScoreCurrentEntryId({ commit }, entryId) {
       commit('SET_SCORE_CURRENT_ENTRY_ID', entryId);
@@ -43,6 +51,9 @@ export default {
     },
     scoreEntries(state) {
       return R.path(['entries'], state);
+    },
+    scoreNotes(state) {
+      return R.path(['notes'], state);
     },
     scoreCurrentEntryId(state) {
       return R.path(['entryId'], state);
