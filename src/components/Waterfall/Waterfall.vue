@@ -148,24 +148,27 @@ export default {
     translateToScoreTimestamp() {
       const { context, msToPx } = this;
 
-      context.translate(0, msToPx(this.playbackTimestamp));
+      context.translate(0, msToPx(this.playbackTimestamp) * 1000);
     },
     translateByTimeElapsed() {
       const { context, msToPx } = this;
 
       if (this.isPlaybackPlaying) {
         context.translate(0, msToPx(
-          performance.now() - this.playbackStartTimestamp,
-        ));
+          this.AudioContext.currentTime - this.playbackStartTimestamp,
+        ) * 1000);
       }
     },
     getVisibleEntries() {
       const { pxToMs, context } = this;
       let timeFromStart = 0;
-      if (this.isPlaybackPlaying) timeFromStart = (performance.now() - this.playbackStartTimestamp);
+      if (this.isPlaybackPlaying) {
+        timeFromStart = this.AudioContext.currentTime
+          - this.playbackStartTimestamp;
+      }
 
-      const windowStart = this.playbackTimestamp + timeFromStart;
-      const windowEnd = windowStart + pxToMs(context.canvas.height);
+      const windowStart = this.playbackTimestamp * 1000 + timeFromStart * 1000;
+      const windowEnd = windowStart * 1000 + pxToMs(context.canvas.height);
 
       const visibleEntries = this.scoreEntries.filter(
         ({ timestamp, longestNote }) => timestamp < windowEnd

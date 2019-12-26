@@ -11,7 +11,7 @@ import { OpenSheetMusicDisplay } from 'opensheetmusicdisplay';
   PLAYBACK_CONTROL_STEP_FORWARD,
 } from '../../event-bus/events'; */
 import {
-  mapOsmdToVerticalEntries,
+  mapOsmdToVerticalEntries, mapOsmdToNotes,
 } from './playbackHelpers';
 
 export default {
@@ -56,6 +56,7 @@ export default {
   methods: {
     ...mapActions({
       setScoreReady: 'setScoreReady',
+      setScoreNotes: 'setScoreNotes',
       setScoreEntries: 'setScoreEntries',
       setCurrentEntryId: 'setPlaybackEntryId',
       vuexStopPlayback: 'stopPlayback',
@@ -82,6 +83,7 @@ export default {
       const { osmd } = this;
       const { cursor } = osmd;
 
+      this.setScoreNotes(mapOsmdToNotes(osmd));
       this.verticalEntries = mapOsmdToVerticalEntries(osmd);
       cursor.reset();
       cursor.show();

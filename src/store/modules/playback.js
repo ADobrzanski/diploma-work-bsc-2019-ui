@@ -34,32 +34,26 @@ export default {
     },
   },
   actions: {
-    setPlaybackEntryId({ commit, getters, rootState }, entryId) {
-      console.log(rootState);
+    setPlaybackEntryId({ commit }, entryId) {
       commit('SET_PLAYBACK_CURRENT_ENTRY', entryId);
-      const currentTimestamp = getters.scoreEntries[entryId].timestamp;
-      commit('SET_PLAYBACK_TIMESTAMP', currentTimestamp);
     },
-    startPlayback({ commit }, { timestamp = performance.now() }) {
-      commit('SET_PLAYBACK_START_TIMESTAMP', timestamp);
+    startPlayback({ commit }, { startTimestamp }) {
+      if (startTimestamp) {
+        commit('SET_PLAYBACK_START_TIMESTAMP', startTimestamp);
+      }
       commit('SET_PLAYBACK_STATUS', PLAYBACK_STATUS_PLAYING);
     },
-    pausePlayback({ commit, getters }, { timestamp = performance.now() }) {
-      commit('SET_PLAYBACK_TIMESTAMP',
-        getters.playbackTimestamp
-          + timestamp
-          - getters.playbackStartTimestamp);
+    pausePlayback({ commit, getters }, { pauseTimestamp }) {
       commit('SET_PLAYBACK_STATUS', PLAYBACK_STATUS_PAUSED);
-      const currentTimestamp = getters.scoreCurrentEntry.timestamp;
-      commit('SET_PLAYBACK_TIMESTAMP', currentTimestamp);
+      if (pauseTimestamp) {
+        commit('SET_PLAYBACK_TIMESTAMP', getters.playbackTimestamp
+          + pauseTimestamp - getters.playbackStartTimestamp);
+      }
     },
-    stopPlayback({ commit, getters }) {
+    stopPlayback({ commit }) {
+      commit('SET_PLAYBACK_STATUS', PLAYBACK_STATUS_STOPPED);
       commit('SET_PLAYBACK_TIMESTAMP', 0);
       commit('SET_SCORE_CURRENT_ENTRY_ID', 0);
-      commit('SET_PLAYBACK_STATUS', PLAYBACK_STATUS_STOPPED);
-
-      const currentTimestamp = getters.scoreCurrentEntry.timestamp;
-      commit('SET_PLAYBACK_TIMESTAMP', currentTimestamp);
     },
     setPlaybackActiveNotes({ commit }, notes) {
       commit('SET_PLAYBACK_ACTIVE_NOTES', notes);

@@ -56,9 +56,9 @@ export default {
     toggleIsPlaying() {
       const { isPlaying } = this;
       if (isPlaying) {
-        this.pausePlayback({ timestamp: performance.now() });
+        this.pausePlayback({ pauseTimestamp: this.AudioContext.currentTime });
       } else {
-        this.startPlayback({ timestamp: performance.now() });
+        this.startPlayback({ startTimestamp: this.AudioContext.currentTime });
       }
     },
   },

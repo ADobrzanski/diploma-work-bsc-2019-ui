@@ -38,7 +38,7 @@ export default {
     ]),
     startPlaybackAnimation() {
       this.nextHopAt = this.playbackStartTimestamp
-        + this.scoreCurrentEntry.timeToNext;
+        + this.scoreCurrentEntry.timeToNext / 1000;
       this.requestAF = requestAnimationFrame(this.scoreStepLoop);
     },
     stopPlaybackAnimation() {
@@ -49,9 +49,9 @@ export default {
         + this.playbackStartTimestamp
         - performance.now(); */
 
-      if (performance.now() >= this.nextHopAt) {
+      if (this.AudioContext.currentTime >= this.nextHopAt) {
         this.increaseScoreCurrentEntryId();
-        this.nextHopAt += this.scoreCurrentEntry.timeToNext;
+        this.nextHopAt += this.scoreCurrentEntry.timeToNext / 1000;
       }
 
       this.requestAF = requestAnimationFrame(this.scoreStepLoop);

@@ -50,8 +50,9 @@ export const mapOsmdToNotes = (osmd) => {
     // eslint-disable-next-line no-loop-func
     R.chain(note => R.pipe(
       R.pick(['halfTone']),
-      R.assoc('length', R.view(lengthLens)(note)),
-      R.assoc('timestamp', timestamp),
+      R.over(R.lensProp('halfTone'), R.add(12)),
+      R.assoc('length', R.view(lengthLens)(note) * 4),
+      R.assoc('timestamp', timestamp * 4),
       R.assoc('audible', getAudacity(note)),
       R.assoc('ref', note),
       (n) => { notes.push(n); },
@@ -60,5 +61,6 @@ export const mapOsmdToNotes = (osmd) => {
     cursor.next();
   }
 
+  cursor.reset();
   return notes;
 };
