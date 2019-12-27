@@ -27,7 +27,6 @@ describe('helpers', () => {
       });
 
       it.skip('return false if note`s not audiable', () => {
-        console.log(sopranoInaudibleNote);
         expect(getAudacity(sopranoInaudibleNote)).toBe(false);
       });
 

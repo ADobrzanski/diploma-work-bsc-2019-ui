@@ -64,3 +64,19 @@ export const mapOsmdToNotes = (osmd) => {
   cursor.reset();
   return notes;
 };
+
+export const mapOsmdToEntryTiming = (osmd) => {
+  const { cursor } = osmd;
+  const timing = [];
+
+  let id = 0;
+  while (!cursor.Iterator.EndReached) {
+    const timestamp = getCursorTimestamp(cursor) * 4;
+    timing.push({ timestamp, id });
+    id += 1;
+    cursor.next();
+  }
+
+  cursor.reset();
+  return timing;
+};

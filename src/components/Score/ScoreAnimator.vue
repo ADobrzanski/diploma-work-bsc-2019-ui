@@ -5,6 +5,7 @@
 </template>
 
 <script>
+import * as R from 'ramda';
 import { mapGetters, mapActions } from 'vuex';
 
 export default {
@@ -12,7 +13,7 @@ export default {
   data() {
     return ({
       requestAF: null,
-      nextHopAt: null,
+      timings: [],
     });
   },
   computed: {
@@ -21,7 +22,14 @@ export default {
       'playbackTimestamp',
       'playbackStartTimestamp',
       'scoreCurrentEntry',
+      'scoreEntryTiming',
     ]),
+    nextHopAt() {
+      return R.pathOr(Infinity, [0, 'timestamp'])(this.timings);
+    },
+    currentEntryId() {
+      return R.pathOr(0, [0, 'id'])(this.timings);
+    },
   },
   watch: {
     isPlaybackPlaying(isPlaying) {
@@ -31,27 +39,35 @@ export default {
         this.stopPlaybackAnimation();
       }
     },
+    scoreEntryTiming(newTiming) {
+      this.filterTimingEntries(newTiming);
+    },
   },
   methods: {
     ...mapActions([
-      'increaseScoreCurrentEntryId',
+      'setScoreCurrentEntryId',
     ]),
+    filterTimingEntries(timing) {
+      this.timings = R.filter(
+        R.propSatisfies(R.lt(this.playbackTimestamp), 'timestamp'),
+      )(timing);
+    },
     startPlaybackAnimation() {
-      this.nextHopAt = this.playbackStartTimestamp
-        + this.scoreCurrentEntry.timeToNext / 1000;
+      this.filterTimingEntries(this.scoreEntryTiming);
       this.requestAF = requestAnimationFrame(this.scoreStepLoop);
     },
     stopPlaybackAnimation() {
       cancelAnimationFrame(this.requestAF);
     },
     scoreStepLoop() {
-      /* const timeInTimestamp = this.playbackTimestamp
-        + this.playbackStartTimestamp
-        - performance.now(); */
+      const timeInSong = this.playbackTimestamp
+        + this.AudioContext.currentTime
+        - this.playbackStartTimestamp;
 
-      if (this.AudioContext.currentTime >= this.nextHopAt) {
-        this.increaseScoreCurrentEntryId();
-        this.nextHopAt += this.scoreCurrentEntry.timeToNext / 1000;
+
+      if (timeInSong >= this.nextHopAt) {
+        this.setScoreCurrentEntryId(this.currentEntryId);
+        this.timings = this.timings.slice(1);
       }
 
       this.requestAF = requestAnimationFrame(this.scoreStepLoop);

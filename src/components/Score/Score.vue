@@ -11,7 +11,7 @@ import { OpenSheetMusicDisplay } from 'opensheetmusicdisplay';
   PLAYBACK_CONTROL_STEP_FORWARD,
 } from '../../event-bus/events'; */
 import {
-  mapOsmdToVerticalEntries, mapOsmdToNotes,
+  mapOsmdToVerticalEntries, mapOsmdToNotes, mapOsmdToEntryTiming,
 } from './playbackHelpers';
 
 export default {
@@ -38,6 +38,18 @@ export default {
       if (oldId < newId) {
         this.cursorStepForward();
       }
+
+      if (newId < oldId) {
+        const { cursor } = this.osmd;
+        cursor.hide();
+        cursor.reset();
+        // eslint-disable-next-line no-plusplus
+        for (let i = 0; i < newId; ++i) {
+          cursor.next();
+        }
+        this.currentEntryIndex = newId;
+        cursor.show();
+      }
     },
   },
   data() {
@@ -58,6 +70,7 @@ export default {
       setScoreReady: 'setScoreReady',
       setScoreNotes: 'setScoreNotes',
       setScoreEntries: 'setScoreEntries',
+      setScoreEntryTiming: 'setScoreEntryTiming',
       setCurrentEntryId: 'setPlaybackEntryId',
       vuexStopPlayback: 'stopPlayback',
     }),
@@ -84,6 +97,7 @@ export default {
       const { cursor } = osmd;
 
       this.setScoreNotes(mapOsmdToNotes(osmd));
+      this.setScoreEntryTiming(mapOsmdToEntryTiming(osmd));
       this.verticalEntries = mapOsmdToVerticalEntries(osmd);
       cursor.reset();
       cursor.show();
