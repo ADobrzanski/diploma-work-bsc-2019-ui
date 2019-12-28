@@ -1,12 +1,11 @@
 /* eslint-disable no-param-reassign */
-// eslint-disable no-param-reassign
 
 import * as R from 'ramda';
 import {
   PLAYBACK_STATUS_PLAYING,
   PLAYBACK_STATUS_PAUSED,
   PLAYBACK_STATUS_STOPPED,
-} from '../values';
+} from '../../consts/values';
 
 export default {
   state: {

@@ -11,7 +11,6 @@ import {
 import App from './App.vue';
 import router from './router';
 import store from './store';
-import Scheduler from './Scheduler';
 
 library.add({
   faPlay,
@@ -25,16 +24,12 @@ Vue.component('font-awesome-icon', FontAwesomeIcon);
 
 Vue.config.productionTip = false;
 
-const scheduler = new Scheduler();
 window.AudioContext = window.AudioContext || window.webkitAudioContext;
 const audioContext = new AudioContext();
 
 Vue.mixin({
   data() {
     return {
-      get scheduler() {
-        return scheduler;
-      },
       get AudioContext() {
         return audioContext;
       },

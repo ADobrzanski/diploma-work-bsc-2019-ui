@@ -22,8 +22,8 @@ import DropZone from '../components/DropZone.vue';
 import exampleMxml from '../assets/BrookeWestSample.musicxml';
 import PlaybackControlsVue from '../components/PlaybackControls.vue';
 import Player from '../components/Player/Player.vue';
-import WaterfallPre from '../components/Waterfall/WaterfallPre.vue';
-import PianoKeyboard from '../components/PianoKeyboard/index.vue';
+import Waterfall from '../components/Waterfall/Waterfall.vue';
+import PianoKeyboard from '../components/PianoKeyboard/Keyboard.vue';
 
 export default {
   name: 'MxmlPlayer',
@@ -33,7 +33,7 @@ export default {
     DropZone,
     'playback-controls': PlaybackControlsVue,
     Player,
-    waterfall: WaterfallPre,
+    waterfall: Waterfall,
     'piano-keyboard': PianoKeyboard,
   },
   data() {

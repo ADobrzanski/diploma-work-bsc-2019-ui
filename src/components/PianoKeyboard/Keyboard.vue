@@ -56,9 +56,6 @@ export default {
       return this.keys.filter(R.propEq('type', KEY_WHITE)).length;
     },
   },
-  mounted() {
-    // console.log(this.keys);
-  },
 };
 </script>
 

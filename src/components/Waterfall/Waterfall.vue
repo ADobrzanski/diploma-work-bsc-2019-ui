@@ -1,5 +1,7 @@
 <template>
-  <canvas id="waterfall" ref="waterfall" class="waterfall"></canvas>
+  <div ref="waterfall" id="waterfall">
+    <img ref="dropletsImg" :style="waterfallImgStyle" />
+  </div>
 </template>
 
 <script>
@@ -17,6 +19,10 @@ import {
   appendWidth,
   appendOffset,
 } from './utils';
+import {
+  WHITE_KEY_DROPLET_COLOR,
+  BLACK_KEY_DROPLET_COLOR,
+} from '../../consts/colors';
 
 export default {
   name: 'waterfall',
@@ -24,7 +30,9 @@ export default {
     return {
       context: null,
       resizeListener: null,
+      imageLoadListener: null,
       dropletSchemas: null,
+      imgOffset: 0,
     };
   },
   computed: {
@@ -32,51 +40,70 @@ export default {
       'playbackTimestamp',
       'playbackStartTimestamp',
       'isPlaybackPlaying',
-      'playbackActiveNotes',
       'isScoreReady',
-      'scoreEntries',
+      'scoreNotes',
       'keyboardStartKey',
       'keyboardKeyCount',
     ]),
+    waterfallImgStyle() {
+      return { transform: `translateY(${this.imgOffset}px)` };
+    },
+    droplets() {
+      const { sToPx, dropletSchemas } = this;
+      if (!dropletSchemas) return [];
+
+      return R.map(
+        note => ({
+          x: dropletSchemas[note.halfTone].offset,
+          y: sToPx(note.timestamp),
+          w: dropletSchemas[note.halfTone].width,
+          h: sToPx(note.length),
+          color: dropletSchemas[note.halfTone].type === KEY_WHITE
+            ? WHITE_KEY_DROPLET_COLOR
+            : BLACK_KEY_DROPLET_COLOR,
+          type: dropletSchemas[note.halfTone].type,
+        }),
+      )(R.filter(R.prop('audible'), this.scoreNotes));
+    },
+    waterfallImgUrl() {
+      return this.prerender(this.droplets);
+    },
   },
   watch: {
-    isScoreReady() {
-      if (this.isScoreReady) this.drawFrame();
-    },
     isPlaybackPlaying() {
       if (this.isPlaybackPlaying) {
         this.startWaterfall();
       } else {
         this.stopWaterfall();
+        this.drawFrame();
       }
     },
     playbackTimestamp() {
       this.drawFrame();
     },
+    waterfallImgUrl() {
+      this.drawImage();
+      this.drawFrame();
+    },
   },
   mounted() {
-    this.initializeCanvasContext();
+    this.registerListeners();
     this.addRoundedRectPrototype();
     this.calculateMidiToDropletMapping();
   },
   updated() {
-    this.drawFrame();
+    this.drawImage();
   },
   methods: {
     ...mapActions(['setPlaybackActiveNotes']),
-    initializeCanvasContext() {
-      this.context = this.$refs.waterfall.getContext('2d');
-      this.matchCanvasSizeWithContainter();
-
-      this.context.fillStyle = '#5CDB95';
+    registerListeners() { // TO DO screw context, keep listening
       this.resizeListener = window.addEventListener('resize', () => {
-        this.matchCanvasSizeWithContainter();
+        this.calculateMidiToDropletMapping();
       });
-    },
-    matchCanvasSizeWithContainter() {
-      this.context.canvas.width = this.context.canvas.clientWidth;
-      this.context.canvas.height = this.context.canvas.clientHeight;
-      this.calculateMidiToDropletMapping();
+
+      this.imageLoadListener = this.$refs.dropletsImg.addEventListener(
+        'load', () => { this.drawFrame(); },
+      );
     },
     addRoundedRectPrototype() {
       // eslint-disable-next-line
@@ -101,7 +128,7 @@ export default {
 
       const keyCodes = R.range(firstMidiCode, lastMidiCode);
 
-      const containerWidth = this.context.canvas.clientWidth;
+      const containerWidth = this.$refs.waterfall.getBoundingClientRect().width;
       const whiteKeyWidth = containerWidth / whiteKeyCount(keyCodes);
 
       const dropletsSchemaData = R.pipe(
@@ -115,23 +142,11 @@ export default {
         data => R.objOf(data.code, data),
       )(dropletsSchemaData));
     },
-    translate00ToBottom() {
-      this.context.translate(0, this.context.canvas.height);
-    },
-    msToPx(ms) {
-      return ms * 50 / 250;
-    },
-    pxToMs(px) {
-      return px * 250 / 50;
-    },
     sToPx(ms) {
       return ms * 50 / 250 * 1000;
     },
     pxToS(px) {
       return px * 250 / 50 * 1000;
-    },
-    extractVisibleNotes(start, end) {
-      return this.scoreEntries.filter(entry => entry.timestamp >= start && entry.timestamp <= end);
     },
     startWaterfall() {
       this.request = requestAnimationFrame(this.loop);
@@ -139,105 +154,72 @@ export default {
     stopWaterfall() {
       cancelAnimationFrame(this.request);
     },
-    drawFrame() {
-      this.resetCanvas();
-      this.translate00ToBottom();
-      this.translateToScoreTimestamp();
-      this.translateByTimeElapsed();
-      this.drawAllDroplets();
-    },
-    resetCanvas() {
-      const { context } = this;
-      context.setTransform(1, 0, 0, 1, 0, 0);
-      context.clearRect(0, 0, context.canvas.width, context.canvas.height);
-    },
-    translateToScoreTimestamp() {
-      const { context, sToPx } = this;
+    prerender(rects, { color } = { color: 'red' }) {
+      const canvasW = R.pipe(
+        R.map(({ x, w }) => x + w),
+        R.reduce(R.max, 0),
+      )(rects);
 
-      context.translate(0, sToPx(this.playbackTimestamp));
-    },
-    translateByTimeElapsed() {
-      const { context, sToPx } = this;
+      const canvasH = R.pipe(
+        R.map(({ y, h }) => y + h),
+        R.reduce(R.max, 0),
+      )(rects);
 
-      if (this.isPlaybackPlaying) {
-        context.translate(0, sToPx(
-          this.AudioContext.currentTime - this.playbackStartTimestamp,
-        ));
-      }
-    },
-    getVisibleEntries() {
-      const { pxToS, context } = this;
-      let timeFromStart = 0;
-      if (this.isPlaybackPlaying) {
-        timeFromStart = this.AudioContext.currentTime
-          - this.playbackStartTimestamp;
-      }
+      const canvas = document.createElement('canvas');
+      canvas.style.width = canvasW;
+      canvas.style.height = canvasH;
 
-      const windowStart = this.playbackTimestamp + timeFromStart;
-      const windowEnd = windowStart + pxToS(context.canvas.height);
+      const context = canvas.getContext('2d');
+      context.canvas.width = canvasW;
+      context.canvas.height = canvasH;
 
-      const visibleEntries = this.scoreEntries.filter(
-        ({ timestamp, longestNote }) => timestamp < windowEnd
-          && (longestNote + timestamp) > windowStart,
-      );
+      context.translate(0, context.canvas.height);
 
-      const activeNotes = R.chain(R.pipe(
-        ({ notes, timestamp }) => R.filter(
-          ({ duration }) => timestamp <= windowStart
-            && timestamp + duration >= windowStart,
-        )(notes),
-        R.map(R.prop('note')),
-      ))(visibleEntries);
+      const splitByKeyType = R.groupBy(R.prop('type'))(this.droplets);
+      const whites = splitByKeyType[KEY_WHITE] || [];
+      const blacks = splitByKeyType[KEY_BLACK] || [];
 
-      /*
-      R.chain(({ notes, timestamp }) => R.pipe(
-        R.filter(({ duration }) => timestamp <= windowStart
-          && timestamp + duration >= windowStart),
-        R.prop('note'),
-      )(notes))(visibleEntries);
-      */
+      context.fillStyle = color;
 
-      if (!R.isEmpty(R.symmetricDifference(this.playbackActiveNotes, activeNotes))) {
-        this.setPlaybackActiveNotes(activeNotes);
-      }
-
-      return visibleEntries;
-    },
-    drawAllDroplets() {
-      const { sToPx, context, dropletSchemas } = this;
-
-      const blacks = [];
-      const visibleEntries = this.getVisibleEntries();
-      visibleEntries.forEach(({ timestamp, notes }) => {
-        notes.forEach((note) => {
-          const { note: noteVal, duration } = note;
-          if (dropletSchemas[noteVal].type === KEY_BLACK) {
-            note.timestamp = timestamp;
-            blacks.push(note);
-            return;
-          }
-          context.roundRect(
-            dropletSchemas[noteVal].offset, -sToPx(timestamp),
-            dropletSchemas[noteVal].width, -sToPx(duration) + 2,
-            4,
-          );
-          this.context.fillStyle = '#5CDB95';
-          this.context.fill();
-        });
-      });
-
-      blacks.forEach((note) => {
-        const { note: noteVal, duration, timestamp } = note;
+      whites.forEach((rect) => {
+        if (rect.color) { context.fillStyle = rect.color; }
         context.roundRect(
-          dropletSchemas[noteVal].offset, -sToPx(timestamp),
-          dropletSchemas[noteVal].width, -sToPx(duration) + 2,
-          4,
+          rect.x, -rect.y, rect.w, -rect.h + 2, 4,
         );
-        this.context.fillStyle = '#2e6d4a';
-        this.context.fill();
+        context.fill();
+        context.fillStyle = color;
       });
 
-      // getActiveNotes
+      blacks.forEach((rect) => {
+        if (rect.color) { context.fillStyle = rect.color; }
+        context.roundRect(
+          rect.x, -rect.y, rect.w, -rect.h + 2, 4,
+        );
+        context.fill();
+        context.fillStyle = color;
+      });
+
+      const url = canvas.toDataURL();
+      return url;
+    },
+    drawImage() {
+      const image = this.$refs.dropletsImg;
+      image.src = this.waterfallImgUrl;
+    },
+    drawFrame() {
+      const container = this.$refs.waterfall;
+      const image = this.$refs.dropletsImg;
+
+      const imgH = image.height;
+      const boxH = container.getBoundingClientRect().height;
+
+      const baseYShift = Math.abs(imgH - boxH);
+      const deltaTime = this.AudioContext.currentTime
+        - this.playbackStartTimestamp;
+      let yShift = -baseYShift + this.sToPx(this.playbackTimestamp);
+      if (this.isPlaybackPlaying) yShift += this.sToPx(deltaTime);
+
+      this.imgOffset = yShift;
     },
     loop() {
       this.drawFrame();
@@ -252,13 +234,22 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  .waterfall {
+  #waterfall {
     width: 100%;
     height: 300px;
     border-radius: 32px 32px 0 0;
-    // border-bottom: 2px solid blue;
+    text-align: left;
     margin: 0;
     padding: 0;
+    overflow: hidden;
     background-color: black;
+  }
+
+  .dropletsImg {
+    width: 100%;
+    height: auto;
+    border: 0;
+    padding: 0;
+    margin: 0;
   }
 </style>

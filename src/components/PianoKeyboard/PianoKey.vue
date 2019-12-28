@@ -48,11 +48,6 @@ export default {
       };
     },
   },
-  watch: {
-    playbackActiveNotes() {
-      // console.log(val);
-    },
-  },
 };
 </script>
 
