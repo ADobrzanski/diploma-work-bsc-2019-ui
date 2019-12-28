@@ -6,6 +6,7 @@ export default {
     entries: [],
     timing: [],
     notes: [],
+    notesThroughTime: [],
     entryId: 0,
   },
   mutations: {
@@ -28,6 +29,10 @@ export default {
     SET_SCORE_CURRENT_ENTRY_ID(state, entryId) {
       // eslint-disable-next-line no-param-reassign
       state.entryId = entryId;
+    },
+    SET_SCORE_NOTES_THROUGH_TIME(state, notesThroughTime) {
+      // eslint-disable-next-line no-param-reassign
+      state.notesThroughTime = notesThroughTime;
     },
   },
   actions: {
@@ -52,6 +57,9 @@ export default {
         getters.scoreCurrentEntryId + 1,
       );
     },
+    setScoreNotesThroughTime({ commit }, notesThroughTime) {
+      commit('SET_SCORE_NOTES_THROUGH_TIME', notesThroughTime);
+    },
   },
   getters: {
     isScoreReady(state) {
@@ -72,6 +80,9 @@ export default {
     scoreCurrentEntry(_, getters) {
       const { scoreEntries, scoreCurrentEntryId } = getters;
       return scoreEntries[scoreCurrentEntryId];
+    },
+    scoreNotesThroughTime(state) {
+      return R.path(['notesThroughTime'])(state);
     },
   },
 };

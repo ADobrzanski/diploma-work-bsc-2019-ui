@@ -11,6 +11,7 @@
 </template>
 
 <script>
+import { mapGetters, mapActions } from 'vuex';
 import * as R from 'ramda';
 import Key from './PianoKey.vue';
 import {
@@ -35,6 +36,12 @@ export default {
     },
   },
   computed: {
+    ...mapGetters([
+      'isPlaybackPlaying',
+      'playbackTimestamp',
+      'playbackStartTimestamp',
+      'scoreNotesThroughTime',
+    ]),
     keys() {
       const firstMidiCode = getMidiCodeFromKey(this.firstKey);
       let lastMidiCode = firstMidiCode + this.keyCount;
@@ -54,6 +61,65 @@ export default {
     },
     pianoSize() {
       return this.keys.filter(R.propEq('type', KEY_WHITE)).length;
+    },
+    nextChangeAt() {
+      return R.pathOr(Infinity, [0, 'timestamp'])(this.timeline);
+    },
+    activeNotes() {
+      return R.pathOr([], [0, 'notes'])(this.timeline);
+    },
+  },
+  data() {
+    return {
+      timeline: [],
+      raf: null,
+    };
+  },
+  watch: {
+    scoreNotesThroughTime() {
+      this.filterNotes();
+      this.awaitActiveChange();
+    },
+    isPlaybackPlaying(isPlaying) {
+      if (isPlaying) {
+        this.start();
+      } else {
+        cancelAnimationFrame(this.raf);
+        this.filterNotes();
+        this.awaitActiveChange();
+      }
+    },
+    playbackTimestamp() {
+      this.filterNotes();
+      this.awaitActiveChange();
+    },
+  },
+  methods: {
+    ...mapActions(['setPlaybackActiveNotes']),
+    filterNotes() {
+      this.timeline = R.pipe(
+        R.filter(R.propSatisfies(R.lt(this.playbackTimestamp))),
+        R.sortBy(R.prop('timestamp')),
+      )(this.scoreNotesThroughTime);
+    },
+    start() {
+      this.loop();
+    },
+    awaitActiveChange() {
+      let timeInSong = this.playbackTimestamp;
+      if (this.isPlaybackPlaying) {
+        timeInSong += this.AudioContext.currentTime
+        - this.playbackStartTimestamp;
+      }
+
+      while (this.nextChangeAt <= timeInSong) {
+        this.setPlaybackActiveNotes(this.activeNotes);
+        this.timeline = this.timeline.slice(1);
+      }
+    },
+    loop() {
+      this.awaitActiveChange();
+      this.raf = requestAnimationFrame(() => this.loop());
     },
   },
 };

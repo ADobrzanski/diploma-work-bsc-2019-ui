@@ -80,3 +80,64 @@ export const mapOsmdToEntryTiming = (osmd) => {
   cursor.reset();
   return timing;
 };
+
+const keystrokeToActiveNotes = timestamp => stroke => ({
+  halfTone: stroke.halfTone + 12,
+  endsAt: stroke.Length.realValue * 4 + timestamp,
+});
+
+
+const notesStillAudible = timestamp => notes => notes.filter(note => note.endsAt > timestamp);
+const pipeMap = mapFn => (array) => {
+  const clone = [...array];
+  for (let idx = 0; idx < array.length; idx += 1) {
+    clone[idx] = mapFn(clone[idx], idx, clone);
+  }
+  return clone;
+};
+const appendStillAudibleNotes = pipeMap((current, idx, timeline) => {
+  const prevNotes = R.pathOr([], [(idx - 1), 'notes'])(timeline);
+  const notesNotEnded = notesStillAudible(current.timestamp)(prevNotes);
+  const notes = R.concat(current.notes, notesNotEnded);
+  return {
+    timestamp: current.timestamp,
+    notes,
+  };
+});
+const discardEndsAtTimestamp = R.map(({ timestamp, notes }) => ({
+  timestamp,
+  notes: R.map(R.prop('halfTone'))(notes),
+}));
+
+// const pipeLog = (sth) => { console.log('pipeLog:'); console.log(sth); return sth; };
+
+export const mapOsmdToActiveNoteTimeline = (osmd) => {
+  const { cursor } = osmd;
+  let notesThroughTime = [];
+
+  while (!cursor.Iterator.EndReached) {
+    const timestamp = getCursorTimestamp(cursor) * 4;
+    const notes = cursor
+      .NotesUnderCursor()
+      .filter(note => !note.isRest());
+
+    if (!R.isEmpty(notes)) {
+      notesThroughTime.push({
+        timestamp,
+        notes: R.map(
+          keystrokeToActiveNotes(timestamp),
+        )(notes),
+      });
+    }
+
+    cursor.next();
+  }
+  cursor.reset();
+
+  notesThroughTime = R.pipe(
+    appendStillAudibleNotes,
+    discardEndsAtTimestamp,
+  )(notesThroughTime);
+
+  return notesThroughTime;
+};

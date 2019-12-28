@@ -6,7 +6,7 @@
 import * as R from 'ramda';
 
 import Soundfont from 'soundfont-player';
-import { mapNotesToSchedulable, filterForScheduleReady } from './Player/helpers';
+import { mapNotesToSchedulable, filterForScheduleReady } from './helpers';
 
 export default {
   name: 'soundfont-player',

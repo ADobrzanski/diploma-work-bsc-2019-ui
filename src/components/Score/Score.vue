@@ -7,7 +7,10 @@ import { mapGetters, mapActions } from 'vuex';
 import { OpenSheetMusicDisplay } from 'opensheetmusicdisplay';
 
 import {
-  mapOsmdToVerticalEntries, mapOsmdToNotes, mapOsmdToEntryTiming,
+  mapOsmdToVerticalEntries,
+  mapOsmdToNotes,
+  mapOsmdToEntryTiming,
+  mapOsmdToActiveNoteTimeline,
 } from './playbackHelpers';
 
 export default {
@@ -65,6 +68,7 @@ export default {
       setScoreNotes: 'setScoreNotes',
       setScoreEntries: 'setScoreEntries',
       setScoreEntryTiming: 'setScoreEntryTiming',
+      setScoreNotesThroughTime: 'setScoreNotesThroughTime',
     }),
     initializeOSMD() {
       this.osmd = new OpenSheetMusicDisplay('score-container', { followCursor: true });
@@ -90,6 +94,7 @@ export default {
 
       this.setScoreNotes(mapOsmdToNotes(osmd));
       this.setScoreEntryTiming(mapOsmdToEntryTiming(osmd));
+      this.setScoreNotesThroughTime(mapOsmdToActiveNoteTimeline(osmd));
       this.verticalEntries = mapOsmdToVerticalEntries(osmd);
       cursor.reset();
       cursor.show();

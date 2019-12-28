@@ -11,7 +11,7 @@
 
 <script>
 import { mapGetters, mapActions } from 'vuex';
-import SoundfontPlayerVue from '../SoundfontPlayer.vue';
+import SoundfontPlayerVue from './SoundfontPlayer.vue';
 
 export default {
   name: 'player',
