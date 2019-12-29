@@ -6,23 +6,36 @@
       icon="step-backward"
       :onClick="handleStepBackward" />
     <playback-button
+      v-if="!learningMode"
       class="playback-button"
       :icon="playPauseIcon"
       :onClick="toggleIsPlaying" />
     <playback-button
+      v-if="!learningMode"
       class="playback-button"
       icon="stop"
       :onClick="stopPlayback" />
     <playback-button
+      v-if="!learningMode"
       class="playback-button"
       icon="step-forward"
       :onClick="handleStepForward" />
+    <v-switch
+      label="Learning mode"
+      v-model="learningMode"
+      class="ma-0 pa-0"
+      inset
+      hide-details ></v-switch>
    </div>
 </template>
 
 <script>
 import { mapGetters, mapActions } from 'vuex';
 import PlaybackButtonVue from './PlaybackButton.vue';
+import {
+  APP_MODE_LEARNING,
+  APP_MODE_PLAYBACK,
+} from '../store/modules/application/consts';
 
 export default {
   name: 'playback-controls',
@@ -32,10 +45,25 @@ export default {
   computed: {
     ...mapGetters({
       isPlaying: 'isPlaybackPlaying',
+      appMode: 'applicationMode',
     }),
     playPauseIcon() {
       const { isPlaying } = this;
       return isPlaying ? 'pause' : 'play';
+    },
+    learningMode: {
+      get() {
+        console.log(this.$store.state.application.mode === APP_MODE_LEARNING);
+        return this.$store.state.application.mode === APP_MODE_LEARNING;
+      },
+      set(isLearning) {
+        this.$store.commit(
+          'SET_APPLICATION_MODE',
+          isLearning
+            ? APP_MODE_LEARNING
+            : APP_MODE_PLAYBACK,
+        );
+      },
     },
   },
   methods: {
@@ -71,6 +99,7 @@ export default {
     flex-direction: row;
     width: 100%;
     justify-content: center;
+    align-items: center;
 
     background-color: lightgreen;
     padding: 16px 0;
