@@ -1,3 +1,6 @@
+/* eslint-disable global-require */
+const VuetifyLoaderPlugin = require('vuetify-loader/lib/plugin');
+
 module.exports = {
   configureWebpack: {
     module: {
@@ -8,5 +11,6 @@ module.exports = {
         },
       ],
     },
+    plugins: [new VuetifyLoaderPlugin()],
   },
 };
