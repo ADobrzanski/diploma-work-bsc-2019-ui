@@ -12,30 +12,32 @@ export default {
     status: PLAYBACK_STATUS_PAUSED,
     timestamp: 0,
     startTimestamp: 0,
-    currentEntry: -1,
     activeNotes: [],
+    entryId: 0,
+    immediates: [],
   },
   mutations: {
-    SET_PLAYBACK_CURRENT_ENTRY(state, entryId) {
-      state.currentEntry = entryId;
-    },
     SET_PLAYBACK_STATUS(state, playbackStatus) {
       state.status = playbackStatus;
     },
     SET_PLAYBACK_TIMESTAMP(state, timestamp) {
       state.timestamp = timestamp;
+      console.log('VUEX: timestamp got set');
     },
     SET_PLAYBACK_ACTIVE_NOTES(state, notes) {
       state.activeNotes = notes;
     },
+    INCREMENT_PLAYBACK_ENTRY_ID(state) {
+      state.entryId += 1;
+    },
     SET_PLAYBACK_START_TIMESTAMP(state, timestamp) {
       state.startTimestamp = timestamp;
     },
+    SET_PLAYBACK_IMMEDIATES(state, notes) {
+      state.immediates = notes;
+    },
   },
   actions: {
-    setPlaybackEntryId({ commit }, entryId) {
-      commit('SET_PLAYBACK_CURRENT_ENTRY', entryId);
-    },
     startPlayback({ commit }, { startTimestamp }) {
       if (startTimestamp) {
         commit('SET_PLAYBACK_START_TIMESTAMP', startTimestamp);
@@ -44,6 +46,7 @@ export default {
     },
     pausePlayback({ commit, getters }, { pauseTimestamp }) {
       commit('SET_PLAYBACK_STATUS', PLAYBACK_STATUS_PAUSED);
+      console.log('VUEX: pausePlayback');
       if (pauseTimestamp) {
         commit('SET_PLAYBACK_TIMESTAMP', getters.playbackTimestamp
           + pauseTimestamp - getters.playbackStartTimestamp);
@@ -56,6 +59,10 @@ export default {
     },
     setPlaybackActiveNotes({ commit }, notes) {
       commit('SET_PLAYBACK_ACTIVE_NOTES', notes);
+      commit('INCREMENT_PLAYBACK_ENTRY_ID');
+    },
+    setPlaybackImmediates({ commit }, notes) {
+      commit('SET_PLAYBACK_IMMEDIATES', notes);
     },
   },
   getters: {
@@ -75,13 +82,17 @@ export default {
       return false;
     },
     playbackTimestamp(state) {
-      return R.path(['timestamp'], state);
+      console.log('VUEX: pTimestamp getter');
+      return state.timestamp;
     },
     playbackStartTimestamp(state) {
       return R.path(['startTimestamp'], state);
     },
     playbackActiveNotes(state) {
-      return R.path(['activeNotes'], state);
+      return state.activeNotes;
+    },
+    immediates(state) {
+      return R.path(['immediates'])(state);
     },
   },
 };

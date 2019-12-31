@@ -1,5 +1,5 @@
 <template>
-  <div id="drop_zone"
+  <div class="drop_zone"
     @drop.prevent="handleDrop"
     @dragover.prevent>
     <slot></slot>
@@ -35,5 +35,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-
+.drop_zone {
+  flex: 1;
+  overflow: hidden;
+}
 </style>

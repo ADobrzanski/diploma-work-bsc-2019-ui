@@ -6,7 +6,6 @@
 
 <script>
 import * as R from 'ramda';
-import { mapGetters, mapActions } from 'vuex';
 import {
   KEY_WHITE,
   getMidiCodeFromKey,
@@ -28,23 +27,46 @@ export default {
   name: 'waterfall',
   data() {
     return {
-      context: null,
       resizeListener: null,
       imageLoadListener: null,
       dropletSchemas: null,
       imgOffset: 0,
     };
   },
+
+
+  props: {
+    active: {
+      type: Boolean,
+      defult: false,
+    },
+    now: {
+      type: Function,
+      default: () => performance.now(),
+    },
+    startTimestamp: {
+      type: Number,
+      default: 0,
+    },
+    songTimestamp: {
+      type: Number,
+      default: 0,
+    },
+    notes: {
+      type: Array,
+      default: () => [],
+    },
+    keyboard: {
+      type: Object,
+      default: () => ({
+        startKey: 'C2',
+        keyCount: 61,
+      }),
+    },
+  },
+
+
   computed: {
-    ...mapGetters([
-      'playbackTimestamp',
-      'playbackStartTimestamp',
-      'isPlaybackPlaying',
-      'isScoreReady',
-      'scoreNotes',
-      'keyboardStartKey',
-      'keyboardKeyCount',
-    ]),
     waterfallImgStyle() {
       return { transform: `translateY(${this.imgOffset}px)` };
     },
@@ -63,22 +85,24 @@ export default {
             : BLACK_KEY_DROPLET_COLOR,
           type: dropletSchemas[note.halfTone].type,
         }),
-      )(R.filter(R.prop('audible'), this.scoreNotes));
+      )(R.filter(R.prop('audible'), this.notes)); // TODO swap for props.notes
     },
     waterfallImgUrl() {
       return this.prerender(this.droplets);
     },
   },
+
+
   watch: {
-    isPlaybackPlaying() {
-      if (this.isPlaybackPlaying) {
+    active(isActive) { // TODO change for props.active
+      if (isActive) {
         this.startWaterfall();
       } else {
         this.stopWaterfall();
         this.drawFrame();
       }
     },
-    playbackTimestamp() {
+    songTimestamp() { // TODO change for songTimestamp
       this.drawFrame();
     },
     waterfallImgUrl() {
@@ -86,17 +110,22 @@ export default {
       this.drawFrame();
     },
   },
+
+
   mounted() {
     this.registerListeners();
     this.addRoundedRectPrototype();
     this.calculateMidiToDropletMapping();
   },
+
+
   updated() {
     this.drawImage();
   },
+
+
   methods: {
-    ...mapActions(['setPlaybackActiveNotes']),
-    registerListeners() { // TO DO screw context, keep listening
+    registerListeners() {
       this.resizeListener = window.addEventListener('resize', () => {
         this.calculateMidiToDropletMapping();
       });
@@ -122,8 +151,8 @@ export default {
       };
     },
     calculateMidiToDropletMapping() {
-      const firstMidiCode = getMidiCodeFromKey(this.keyboardStartKey);
-      let lastMidiCode = firstMidiCode + this.keyboardKeyCount;
+      const firstMidiCode = getMidiCodeFromKey(this.keyboard.startKey);
+      let lastMidiCode = firstMidiCode + this.keyboard.keyCount;
       if (getKeyTypeFromMidiCode(lastMidiCode) === KEY_WHITE) lastMidiCode += 1;
 
       const keyCodes = R.range(firstMidiCode, lastMidiCode);
@@ -214,10 +243,10 @@ export default {
       const boxH = container.getBoundingClientRect().height;
 
       const baseYShift = Math.abs(imgH - boxH);
-      const deltaTime = this.AudioContext.currentTime
-        - this.playbackStartTimestamp;
-      let yShift = -baseYShift + this.sToPx(this.playbackTimestamp);
-      if (this.isPlaybackPlaying) yShift += this.sToPx(deltaTime);
+      const deltaTime = this.now()
+        - this.startTimestamp;
+      let yShift = -baseYShift + this.sToPx(this.songTimestamp);
+      if (this.active) yShift += this.sToPx(deltaTime);
 
       this.imgOffset = yShift;
     },
@@ -226,6 +255,7 @@ export default {
       this.request = requestAnimationFrame(() => this.loop());
     },
   },
+
 
   beforeDestroy() {
     window.removeEventListener('resize', this.resizeListener);

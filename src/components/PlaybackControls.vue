@@ -20,6 +20,11 @@
       class="playback-button"
       icon="step-forward"
       :onClick="handleStepForward" />
+    <playback-button
+      v-if="learningMode"
+      class="playback-button"
+      icon="undo"
+      :onClick="stopPlayback" />
     <v-switch
       label="Learning mode"
       v-model="learningMode"
@@ -53,7 +58,6 @@ export default {
     },
     learningMode: {
       get() {
-        console.log(this.$store.state.application.mode === APP_MODE_LEARNING);
         return this.$store.state.application.mode === APP_MODE_LEARNING;
       },
       set(isLearning) {
@@ -100,9 +104,7 @@ export default {
     width: 100%;
     justify-content: center;
     align-items: center;
-
     background-color: lightgreen;
-    padding: 16px 0;
   }
 
   .playback-button {

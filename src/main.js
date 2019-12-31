@@ -7,6 +7,7 @@ import {
   faStop,
   faStepForward,
   faStepBackward,
+  faUndo,
 } from '@fortawesome/free-solid-svg-icons';
 import App from './App.vue';
 import router from './router';
@@ -19,6 +20,7 @@ library.add({
   faStop,
   faStepForward,
   faStepBackward,
+  faUndo,
 });
 
 Vue.component('font-awesome-icon', FontAwesomeIcon);

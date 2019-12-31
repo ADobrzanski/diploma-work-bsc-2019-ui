@@ -1,5 +1,7 @@
 <template>
-  <div id="score-container" class="score-container"></div>
+  <div ref="score-wrapper" class="score-wrapper">
+    <div id="score-container" class="score-container"></div>
+  </div>
 </template>
 
 <script>
@@ -35,7 +37,9 @@ export default {
       }
 
       if (oldId < newId) {
-        this.cursorStepForward();
+        for (let i = oldId; i < newId; i += 1) {
+          this.cursorStepForward();
+        }
       }
 
       if (newId < oldId) {
@@ -82,7 +86,7 @@ export default {
           this.setScoreEntries(this.verticalEntries);
           this.setScoreReady(true);
         })
-        .catch(err => console.log(err.message));
+        .catch(err => console.error(err.message));
     },
     loadSheetFromProps() {
       const { osmd, xml } = this;
@@ -116,9 +120,16 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.score-wrapper {
+  flex: 1;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: scroll;
+}
+
 .score-container {
   width: 1200px;
-  height: 500px;
   overflow: hidden;
   margin: 0 auto;
 }

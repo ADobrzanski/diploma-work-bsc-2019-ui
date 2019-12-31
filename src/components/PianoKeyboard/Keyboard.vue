@@ -11,7 +11,7 @@
 </template>
 
 <script>
-import { mapGetters, mapActions } from 'vuex';
+import { mapGetters, mapActions, mapState } from 'vuex';
 import * as R from 'ramda';
 import Key from './PianoKey.vue';
 import {
@@ -36,6 +36,9 @@ export default {
     },
   },
   computed: {
+    ...mapState({
+      songLength: state => state.score.length,
+    }),
     ...mapGetters([
       'isPlaybackPlaying',
       'playbackTimestamp',
@@ -76,7 +79,7 @@ export default {
     };
   },
   watch: {
-    scoreNotesThroughTime() {
+    scoreNotesThroughTime() { // TODO move to computed and test
       this.filterNotes();
       this.awaitActiveChange();
     },
@@ -85,21 +88,31 @@ export default {
         this.start();
       } else {
         cancelAnimationFrame(this.raf);
+      }
+    },
+    playbackTimestamp(newVal, oldVal) {
+      if (!R.equals(newVal, oldVal)) {
         this.filterNotes();
         this.awaitActiveChange();
       }
     },
-    playbackTimestamp() {
-      this.filterNotes();
-      this.awaitActiveChange();
+    nextChangeAt(newVal, oldVal) {
+      if (
+        !R.equals(newVal, oldVal)
+        && newVal === Infinity
+      ) {
+        cancelAnimationFrame(this.raf);
+        this.$emit('endReached', this.AudioContext.currentTime);
+      }
     },
   },
   methods: {
     ...mapActions(['setPlaybackActiveNotes']),
     filterNotes() {
       this.timeline = R.pipe(
-        R.filter(R.propSatisfies(R.lt(this.playbackTimestamp))),
+        R.filter(R.propSatisfies(R.lte(this.playbackTimestamp), 'timestamp')),
         R.sortBy(R.prop('timestamp')),
+        R.append({ timestamp: this.songLength, notes: [] }),
       )(this.scoreNotesThroughTime);
     },
     start() {
@@ -108,8 +121,9 @@ export default {
     awaitActiveChange() {
       let timeInSong = this.playbackTimestamp;
       if (this.isPlaybackPlaying) {
-        timeInSong += this.AudioContext.currentTime
-        - this.playbackStartTimestamp;
+        timeInSong
+          += this.AudioContext.currentTime
+          - this.playbackStartTimestamp;
       }
 
       while (this.nextChangeAt <= timeInSong) {
@@ -127,8 +141,8 @@ export default {
 
 <style lang="scss" scoped>
   .keyboard {
-    flex: 1;
     display: flex;
+    height: 120px;
     flex-direction: row;
     align-content: top;
   }

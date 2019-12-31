@@ -1,29 +1,40 @@
 <template>
-    <div id="player-container">
+    <div class="player-container">
       <player />
+      <training-controler />
       <playback-controls />
-      <DropZone :onDrop="receiveLocalFile">
+      <drop-zone :onDrop="receiveLocalFile">
         <score-animator>
-          <Score v-bind:xml="xml" />
+          <score v-bind:xml="xml" />
         </score-animator>
-      </DropZone>
+      </drop-zone>
       <waterfall />
       <piano-keyboard
         firstKey="C2"
         :keyCount=61
+        @endReached="handleEndReached"
       />
+      <modal-training-finished
+        :visible="dialog"
+        :onRepeat="handleRepeat"
+        :onExit="setPlaybackMode" />
     </div>
 </template>
 
 <script>
+import { mapActions, mapState } from 'vuex';
+/* eslint-disable import/extensions */
 import Score from '../components/Score/Score.vue';
 import ScoreAnimator from '../components/Score/ScoreAnimator.vue';
 import DropZone from '../components/DropZone.vue';
 import exampleMxml from '../assets/BrookeWestSample.musicxml';
 import PlaybackControlsVue from '../components/PlaybackControls.vue';
+import TrainingControler from '../components/Training/Controller.vue';
 import Player from '../components/Player/Player.vue';
-import Waterfall from '../components/Waterfall/Waterfall.vue';
+import Waterfall from '../components/Waterfall/index.vue';
 import PianoKeyboard from '../components/PianoKeyboard/Keyboard.vue';
+import ModalTrainingFinished from '../components/Training/ModalFinished.vue';
+import { APP_MODE_LEARNING, APP_MODE_PLAYBACK } from '../store/modules/application/consts';
 
 export default {
   name: 'MxmlPlayer',
@@ -32,28 +43,59 @@ export default {
     'score-animator': ScoreAnimator,
     DropZone,
     'playback-controls': PlaybackControlsVue,
+    TrainingControler,
     Player,
     waterfall: Waterfall,
     'piano-keyboard': PianoKeyboard,
+    ModalTrainingFinished,
   },
   data() {
     return {
       xml: exampleMxml,
+      dialog: false,
     };
   },
+  watch: {
+    dialog(newVal) {
+      console.log(newVal);
+    },
+  },
+  computed: {
+    ...mapState({
+      isTraining: state => state.application.mode === APP_MODE_LEARNING,
+    }),
+  },
   methods: {
+    ...mapActions([
+      'pausePlayback',
+      'stopPlayback',
+    ]),
     receiveLocalFile(file) {
       file.text().then((text) => { this.xml = text; });
+    },
+    handleEndReached() {
+      if (this.isTraining) {
+        this.dialog = true;
+        this.pausePlayback({ pauseTimestamp: this.AudioContext.currentTime });
+      }
+    },
+    handleRepeat() {
+      this.stopPlayback();
+      this.dialog = false;
+    },
+    setPlaybackMode() {
+      this.$store.commit('SET_APPLICATION_MODE', APP_MODE_PLAYBACK);
+      this.stopPlayback();
+      this.dialog = false;
     },
   },
 };
 </script>
 
 <style lang="scss" scoped>
-  #player-container {
-    height: 100%;
+  .player-container {
     display: flex;
     flex-direction: column;
-    overflow-y: hidden;
+    height: 100%;
   }
 </style>

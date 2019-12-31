@@ -78,46 +78,19 @@ export default {
         this.pause();
       }
     },
+    immediates(notes) {
+      notes.forEach(this.piano.play);
+    },
   },
   mounted() {
     this.initInstrument();
-    this.initMidiCapture();
+    // this.initMidiCapture();
   },
   methods: {
     initInstrument() {
       Soundfont
         .instrument(this.audioContext, 'acoustic_grand_piano', { soundfont: 'MusyngKite' })
         .then((soundfont) => { this.piano = soundfont; });
-    },
-    initMidiCapture() {
-      navigator.requestMIDIAccess().then((midiAccess) => {
-        const handle = ({ data }) => {
-          switch (data[0]) {
-            case 144:
-              this.piano.play(data[1]);
-              this.setPlaybackActiveNotes(
-                [...this.playbackActiveNotes, data[1]],
-              );
-              break;
-            case 128:
-              this.setPlaybackActiveNotes(
-                R.filter(code => code !== data[1])(this.playbackActiveNotes),
-              );
-              break;
-            default:
-              // do nothing
-              break;
-          }
-        };
-          /* eslint-disable */
-        	const midi = midiAccess; // this is our raw MIDI data, inputs, outputs, and sysex status
-          var inputs = midi.inputs.values();
-        // loop over all available inputs and listen for any MIDI input
-          for (var input = inputs.next(); input && !input.done; input = inputs.next()) {
-            input.value.onmidimessage = handle;// each time there is a midi message call the onMIDIMessage function
-          }
-        /* eslint-enable */
-      });
     },
     playNoteListener(payload) {
       const { piano, audioContext } = this;
@@ -166,8 +139,14 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
   .soundfont-player {
-    display: hidden;
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 0;
+    width: 0;
+    margin: 0;
+    padding: 0;
   }
 </style>

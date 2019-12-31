@@ -8,6 +8,7 @@ export default {
     notes: [],
     notesThroughTime: [],
     entryId: 0,
+    length: Infinity,
   },
   mutations: {
     SET_SCORE_READY(state, isReady) {
@@ -26,9 +27,13 @@ export default {
       // eslint-disable-next-line no-param-reassign
       state.notes = notes;
     },
+    SET_SCORE_SONG_LENGTH(state, length) {
+      state.length = length;
+    },
     SET_SCORE_CURRENT_ENTRY_ID(state, entryId) {
       // eslint-disable-next-line no-param-reassign
       state.entryId = entryId;
+      console.log(`VUEX: set score current eId: ${entryId}`);
     },
     SET_SCORE_NOTES_THROUGH_TIME(state, notesThroughTime) {
       // eslint-disable-next-line no-param-reassign
@@ -47,6 +52,14 @@ export default {
     },
     setScoreNotes({ commit }, notes) {
       commit('SET_SCORE_NOTES', notes);
+
+      const length = R.pipe(
+        R.last,
+        R.pick(['timestamp', 'length']),
+        R.values,
+        R.sum,
+      )(notes);
+      commit('SET_SCORE_SONG_LENGTH', length);
     },
     setScoreCurrentEntryId({ commit }, entryId) {
       commit('SET_SCORE_CURRENT_ENTRY_ID', entryId);
