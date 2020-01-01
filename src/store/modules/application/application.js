@@ -5,6 +5,7 @@ export default {
   state: {
     mode: APP_MODE_PLAYBACK,
     inputNotes: [],
+    errors: [],
   },
   mutations: {
     SET_APPLICATION_MODE(state, mode) {
@@ -12,6 +13,9 @@ export default {
     },
     SET_INPUT_NOTES(state, notes) {
       state.inputNotes = notes;
+    },
+    SET_APPLICATION_ERRORS(state, errors) {
+      state.errors = errors;
     },
   },
   actions: {

@@ -10,9 +10,11 @@ import {
   faUndo,
 } from '@fortawesome/free-solid-svg-icons';
 import App from './App.vue';
+import queries from './api/queries';
 import router from './router';
 import store from './store';
 import vuetify from './plugins/vuetify';
+import { createProvider } from './vue-apollo';
 
 library.add({
   faPlay,
@@ -44,5 +46,9 @@ new Vue({
   router,
   store,
   vuetify,
+  apolloProvider: createProvider(),
+  apollo: {
+    ...queries(store),
+  },
   render: h => h(App),
 }).$mount('#app');

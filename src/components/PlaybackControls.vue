@@ -31,6 +31,7 @@
       class="ma-0 pa-0"
       inset
       hide-details ></v-switch>
+    <span>Siemka {{me.name}}!</span>
    </div>
 </template>
 
@@ -46,6 +47,11 @@ export default {
   name: 'playback-controls',
   components: {
     'playback-button': PlaybackButtonVue,
+  },
+  data() {
+    return {
+      me: { id: -1, name: '', email: '' },
+    };
   },
   computed: {
     ...mapGetters({
