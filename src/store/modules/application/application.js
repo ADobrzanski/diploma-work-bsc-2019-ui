@@ -7,6 +7,7 @@ export default {
     inputNotes: [],
     errors: [],
     user: null,
+    authDialog: false,
   },
   mutations: {
     SET_APPLICATION_MODE(state, mode) {
@@ -20,6 +21,9 @@ export default {
     },
     SET_APPLICATION_USER(state, user) {
       state.user = user;
+    },
+    SET_APPLICATION_AUTH_DIALOG(state, show) {
+      state.authDialog = show;
     },
   },
   actions: {

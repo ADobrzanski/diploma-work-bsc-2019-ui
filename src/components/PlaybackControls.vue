@@ -1,43 +1,46 @@
 <template>
-   <div class="playback-controls">
-    <playback-button
-      v-if="false"
-      class="playback-button"
-      icon="step-backward"
-      :onClick="handleStepBackward" />
-    <playback-button
-      v-if="!learningMode"
-      class="playback-button"
-      :icon="playPauseIcon"
-      :onClick="toggleIsPlaying" />
-    <playback-button
-      v-if="!learningMode"
-      class="playback-button"
-      icon="stop"
-      :onClick="stopPlayback" />
-    <playback-button
-      v-if="!learningMode"
-      class="playback-button"
-      icon="step-forward"
-      :onClick="handleStepForward" />
-    <playback-button
-      v-if="learningMode"
-      class="playback-button"
-      icon="undo"
-      :onClick="stopPlayback" />
-    <v-switch
-      label="Learning mode"
-      v-model="learningMode"
-      class="ma-0 pa-0"
-      inset
-      hide-details ></v-switch>
-    <span>Siemka {{me.name}}!</span>
+   <div class="playback-controls px-4 py-2">
+     <div class="d-flex align-center">
+        <playback-button
+          v-if="false"
+          class="playback-button"
+          icon="step-backward"
+          :onClick="handleStepBackward" />
+        <playback-button
+          v-if="!learningMode"
+          class="playback-button"
+          :icon="playPauseIcon"
+          :onClick="toggleIsPlaying" />
+        <playback-button
+          v-if="!learningMode"
+          class="playback-button"
+          icon="stop"
+          :onClick="stopPlayback" />
+        <playback-button
+          v-if="!learningMode"
+          class="playback-button"
+          icon="step-forward"
+          :onClick="handleStepForward" />
+        <playback-button
+          v-if="learningMode"
+          class="playback-button"
+          icon="undo"
+          :onClick="stopPlayback" />
+        <v-switch
+          label="Learning mode"
+          v-model="learningMode"
+          class="ma-0 pa-0"
+          inset
+          hide-details ></v-switch>
+     </div>
+      <user-chip @click="showAuthDialog"/>
    </div>
 </template>
 
 <script>
 import { mapGetters, mapActions } from 'vuex';
 import PlaybackButtonVue from './PlaybackButton.vue';
+import UserChip from './UserChip.vue';
 import {
   APP_MODE_LEARNING,
   APP_MODE_PLAYBACK,
@@ -47,6 +50,7 @@ export default {
   name: 'playback-controls',
   components: {
     'playback-button': PlaybackButtonVue,
+    UserChip,
   },
   data() {
     return {
@@ -99,6 +103,9 @@ export default {
         this.startPlayback({ startTimestamp: this.AudioContext.currentTime });
       }
     },
+    showAuthDialog() {
+      this.$store.commit('SET_APPLICATION_AUTH_DIALOG', true);
+    },
   },
 };
 </script>
@@ -108,7 +115,7 @@ export default {
     display: flex;
     flex-direction: row;
     width: 100%;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
     background-color: lightgreen;
   }

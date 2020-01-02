@@ -57,7 +57,6 @@ export default {
     return {
       xml: exampleMxml,
       dialog: false,
-      authDialog: false,
     };
   },
   watch: {
@@ -68,7 +67,12 @@ export default {
   computed: {
     ...mapState({
       isTraining: state => state.application.mode === APP_MODE_LEARNING,
+      authDialogVisible: state => state.application.authDialog,
     }),
+    authDialog: {
+      get() { return this.authDialogVisible; },
+      set(newVal) { this.$store.commit('SET_APPLICATION_AUTH_DIALOG', newVal); },
+    },
   },
   methods: {
     ...mapActions([

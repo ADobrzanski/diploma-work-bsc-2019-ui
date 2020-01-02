@@ -9,6 +9,8 @@ import {
   faStepBackward,
   faUndo,
   faArrowLeft,
+  faUserCircle,
+  faKey,
 } from '@fortawesome/free-solid-svg-icons';
 import App from './App.vue';
 import queries from './api/queries';
@@ -25,6 +27,8 @@ library.add({
   faStepBackward,
   faUndo,
   faArrowLeft,
+  faUserCircle,
+  faKey,
 });
 
 Vue.component('font-awesome-icon', FontAwesomeIcon);
