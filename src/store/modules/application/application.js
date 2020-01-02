@@ -6,6 +6,7 @@ export default {
     mode: APP_MODE_PLAYBACK,
     inputNotes: [],
     errors: [],
+    user: null,
   },
   mutations: {
     SET_APPLICATION_MODE(state, mode) {
@@ -16,6 +17,9 @@ export default {
     },
     SET_APPLICATION_ERRORS(state, errors) {
       state.errors = errors;
+    },
+    SET_APPLICATION_USER(state, user) {
+      state.user = user;
     },
   },
   actions: {

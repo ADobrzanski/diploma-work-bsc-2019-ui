@@ -8,6 +8,7 @@ import {
   faStepForward,
   faStepBackward,
   faUndo,
+  faArrowLeft,
 } from '@fortawesome/free-solid-svg-icons';
 import App from './App.vue';
 import queries from './api/queries';
@@ -23,6 +24,7 @@ library.add({
   faStepForward,
   faStepBackward,
   faUndo,
+  faArrowLeft,
 });
 
 Vue.component('font-awesome-icon', FontAwesomeIcon);

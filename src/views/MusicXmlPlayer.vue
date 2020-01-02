@@ -18,6 +18,8 @@
         :visible="dialog"
         :onRepeat="handleRepeat"
         :onExit="setPlaybackMode" />
+      <auth-modal
+        v-model="authDialog"/>
     </div>
 </template>
 
@@ -34,6 +36,7 @@ import Player from '../components/Player/Player.vue';
 import Waterfall from '../components/Waterfall/index.vue';
 import PianoKeyboard from '../components/PianoKeyboard/Keyboard.vue';
 import ModalTrainingFinished from '../components/Training/ModalFinished.vue';
+import AuthModal from '../components/AuthDialog/index.vue';
 import { APP_MODE_LEARNING, APP_MODE_PLAYBACK } from '../store/modules/application/consts';
 
 export default {
@@ -48,11 +51,13 @@ export default {
     waterfall: Waterfall,
     'piano-keyboard': PianoKeyboard,
     ModalTrainingFinished,
+    AuthModal,
   },
   data() {
     return {
       xml: exampleMxml,
       dialog: false,
+      authDialog: false,
     };
   },
   watch: {
