@@ -8,6 +8,7 @@ export default {
     errors: [],
     user: null,
     authDialog: false,
+    uploadDialog: false,
   },
   mutations: {
     SET_APPLICATION_MODE(state, mode) {
@@ -24,6 +25,9 @@ export default {
     },
     SET_APPLICATION_AUTH_DIALOG(state, show) {
       state.authDialog = show;
+    },
+    SET_APPLICATION_UPLOAD_DIALOG(state, show) {
+      state.uploadDialog = show;
     },
   },
   actions: {

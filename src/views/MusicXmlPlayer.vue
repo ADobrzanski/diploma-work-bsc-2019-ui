@@ -18,8 +18,8 @@
         :visible="dialog"
         :onRepeat="handleRepeat"
         :onExit="setPlaybackMode" />
-      <auth-modal
-        v-model="authDialog"/>
+      <auth-modal v-model="authDialog" />
+      <upload-dialog v-model="uploadDialog" />
     </div>
 </template>
 
@@ -37,6 +37,7 @@ import Waterfall from '../components/Waterfall/index.vue';
 import PianoKeyboard from '../components/PianoKeyboard/Keyboard.vue';
 import ModalTrainingFinished from '../components/Training/ModalFinished.vue';
 import AuthModal from '../components/AuthDialog/index.vue';
+import UploadDialog from '../components/UploadDialog.vue';
 import { APP_MODE_LEARNING, APP_MODE_PLAYBACK } from '../store/modules/application/consts';
 
 export default {
@@ -52,6 +53,7 @@ export default {
     'piano-keyboard': PianoKeyboard,
     ModalTrainingFinished,
     AuthModal,
+    UploadDialog,
   },
   data() {
     return {
@@ -68,10 +70,15 @@ export default {
     ...mapState({
       isTraining: state => state.application.mode === APP_MODE_LEARNING,
       authDialogVisible: state => state.application.authDialog,
+      uploadDialogVisible: state => state.application.uploadDialog,
     }),
     authDialog: {
       get() { return this.authDialogVisible; },
       set(newVal) { this.$store.commit('SET_APPLICATION_AUTH_DIALOG', newVal); },
+    },
+    uploadDialog: {
+      get() { return this.uploadDialogVisible; },
+      set(val) { this.$store.commit('SET_APPLICATION_UPLOAD_DIALOG', val); },
     },
   },
   methods: {
@@ -80,6 +87,7 @@ export default {
       'stopPlayback',
     ]),
     receiveLocalFile(file) {
+      this.uploadDialog = true;
       file.text().then((text) => { this.xml = text; });
     },
     handleEndReached() {
