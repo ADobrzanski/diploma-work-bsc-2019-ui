@@ -5,7 +5,7 @@
       <font-awesome-icon icon="arrow-left" />
     </v-btn>
     <v-toolbar-title>
-      👋 Co słychać {{username}}?
+      👋 Co słychać {{user ? user.name : ''}}?
     </v-toolbar-title>
   </v-toolbar>
   <v-card-text>
@@ -25,20 +25,16 @@
 </template>
 
 <script>
-import { mapState } from 'vuex';
+import { currentUser } from '../../api/queries';
 import { onLogout } from '../../vue-apollo';
 
 export default {
   name: 'user-form',
-  computed: {
-    ...mapState({
-      username: state => state.application.user.name,
-    }),
-  },
+  apollo: { user: currentUser },
+  data() { return { user: null }; },
   methods: {
     handleLogout() {
       onLogout(this.$apollo.provider.defaultClient);
-      this.$store.commit('SET_APPLICATION_USER', { id: null });
     },
   },
 };

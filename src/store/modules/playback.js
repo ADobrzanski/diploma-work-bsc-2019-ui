@@ -22,7 +22,6 @@ export default {
     },
     SET_PLAYBACK_TIMESTAMP(state, timestamp) {
       state.timestamp = timestamp;
-      console.log('VUEX: timestamp got set');
     },
     SET_PLAYBACK_ACTIVE_NOTES(state, notes) {
       state.activeNotes = notes;
@@ -46,7 +45,6 @@ export default {
     },
     pausePlayback({ commit, getters }, { pauseTimestamp }) {
       commit('SET_PLAYBACK_STATUS', PLAYBACK_STATUS_PAUSED);
-      console.log('VUEX: pausePlayback');
       if (pauseTimestamp) {
         commit('SET_PLAYBACK_TIMESTAMP', getters.playbackTimestamp
           + pauseTimestamp - getters.playbackStartTimestamp);
@@ -82,7 +80,6 @@ export default {
       return false;
     },
     playbackTimestamp(state) {
-      console.log('VUEX: pTimestamp getter');
       return state.timestamp;
     },
     playbackStartTimestamp(state) {

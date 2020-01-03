@@ -9,6 +9,7 @@ export default {
     notesThroughTime: [],
     entryId: 0,
     length: Infinity,
+    details: null,
   },
   mutations: {
     SET_SCORE_READY(state, isReady) {
@@ -33,11 +34,13 @@ export default {
     SET_SCORE_CURRENT_ENTRY_ID(state, entryId) {
       // eslint-disable-next-line no-param-reassign
       state.entryId = entryId;
-      console.log(`VUEX: set score current eId: ${entryId}`);
     },
     SET_SCORE_NOTES_THROUGH_TIME(state, notesThroughTime) {
       // eslint-disable-next-line no-param-reassign
       state.notesThroughTime = notesThroughTime;
+    },
+    SET_SCORE_DETAILS(state, details) {
+      state.details = details;
     },
   },
   actions: {

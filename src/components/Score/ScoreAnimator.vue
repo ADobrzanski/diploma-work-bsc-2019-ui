@@ -1,5 +1,5 @@
 <template>
-  <section>
+  <section class="score-animator">
     <slot />
   </section>
 </template>
@@ -30,7 +30,6 @@ export default {
       'isPlaybackPlaying',
     ]),
     nextHopAt() {
-      console.log('SA: possibly a nextHopAt change');
       return R.pathOr(Infinity, [0, 'timestamp'])(this.entries);
     },
     nextEntryId() {
@@ -52,27 +51,14 @@ export default {
     },
     entryTiming(newVal, oldVal) {
       if (!R.equals(newVal, oldVal)) {
-        console.log('SA: entryTiming changed');
         this.prepareEntries();
         this.awaitNextEntry();
       }
     },
     songTimestamp(newVal, oldVal) {
       if (!R.equals(newVal, oldVal)) {
-        console.log(`SA: timestamp ${this.songTimestamp}`);
         this.prepareEntries();
         this.awaitNextEntry();
-      }
-    },
-    entries(newVal, oldVal) {
-      if (!R.equals(newVal, oldVal)) {
-        console.log('SA: entries have been changed');
-        console.log(newVal);
-      }
-    },
-    nextHopAt(newVal, oldVal) {
-      if (!R.equals(newVal, oldVal)) {
-        console.log(`SA: nextHotAt watch - ${newVal}`);
       }
     },
   },
@@ -81,13 +67,11 @@ export default {
       'setScoreCurrentEntryId',
     ]),
     prepareEntries() {
-      console.log('SA: prepareEntries()');
       this.entries = R.pipe(
         R.sort(R.prop('timestamp')),
         R.findLastIndex(R.propSatisfies(R.gte(this.songTimestamp), 'timestamp')),
         R.drop(R.__, this.entryTiming),
       )(this.entryTiming);
-      console.log(this.entries);
     },
     startPlaybackAnimation() {
       this.requestAF = requestAnimationFrame(() => this.loop());
@@ -97,9 +81,6 @@ export default {
     },
     awaitNextEntry() {
       let timeInSong = this.songTimestamp;
-      console.log(`SA: await - timeInSong ${timeInSong}`);
-      console.log(`SA: await - nextHopAt ${this.nextHopAt}`);
-      console.log(`SA: await - isPlaygin ${this.isPlaybackPlaying}`);
       if (this.isPlaybackPlaying) {
         timeInSong
           += this.AudioContext.currentTime
@@ -107,15 +88,9 @@ export default {
       }
 
       while (timeInSong >= this.nextHopAt) {
-        console.log(`SA: hop - id ${this.nextEntryId}`);
         this.setScoreCurrentEntryId(this.nextEntryId);
         this.entries = this.entries.slice(1);
-        console.log(`SA: nextHopAt: ${this.nextHopAt}`);
       }
-      console.log('SA: ----- await footer ----------');
-      console.log(`SA: hop - id ${this.nextEntryId}`);
-      console.log(`SA: nextHopAt: ${this.nextHopAt}`);
-      console.log('SA: ----------------------------');
     },
     loop() {
       this.awaitNextEntry();
@@ -125,6 +100,8 @@ export default {
 };
 </script>
 
-<style lang="sass" scoped>
-
+<style lang="scss" scoped>
+  .score-animator {
+    height: 100%;
+  }
 </style>

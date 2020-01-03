@@ -19,7 +19,10 @@
         :onRepeat="handleRepeat"
         :onExit="setPlaybackMode" />
       <auth-modal v-model="authDialog" />
-      <upload-dialog v-model="uploadDialog" />
+      <upload-dialog
+        v-model="uploadDialog"
+        :file="file"
+        :scoreDetails="scoreDetails" />
     </div>
 </template>
 
@@ -57,20 +60,18 @@ export default {
   },
   data() {
     return {
+      user: null,
       xml: exampleMxml,
+      file: null,
       dialog: false,
     };
-  },
-  watch: {
-    dialog(newVal) {
-      console.log(newVal);
-    },
   },
   computed: {
     ...mapState({
       isTraining: state => state.application.mode === APP_MODE_LEARNING,
       authDialogVisible: state => state.application.authDialog,
       uploadDialogVisible: state => state.application.uploadDialog,
+      scoreDetails: state => state.score.details,
     }),
     authDialog: {
       get() { return this.authDialogVisible; },
@@ -87,6 +88,7 @@ export default {
       'stopPlayback',
     ]),
     receiveLocalFile(file) {
+      this.file = file;
       this.uploadDialog = true;
       file.text().then((text) => { this.xml = text; });
     },

@@ -1,13 +1,9 @@
+/* eslint-disable import/prefer-default-export */
 import gql from 'graphql-tag';
 
-export default $store => ({
-  me: {
-    query: gql`query {
-      me { id name email }
-    }`,
-    error(e) {
-      const message = JSON.stringify(e.message);
-      $store.commit('SET_APPLICATION_ERRORS', [message]);
-    },
-  },
-});
+export const currentUser = (() => ({
+  query: gql`query {
+    me { id name email }
+  }`,
+  update: data => data.me,
+}))();

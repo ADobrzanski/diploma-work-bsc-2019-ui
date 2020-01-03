@@ -37,6 +37,7 @@ export default {
 <style lang="scss" scoped>
 .drop_zone {
   flex: 1;
-  overflow: hidden;
+  overflow-y: scroll;
+  overflow-x: hidden;
 }
 </style>

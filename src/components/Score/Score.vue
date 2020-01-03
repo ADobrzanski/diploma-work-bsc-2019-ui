@@ -1,6 +1,6 @@
 <template>
   <div ref="score-wrapper" class="score-wrapper">
-    <div id="score-container" class="score-container"></div>
+    <div id="score-container" class="score-container elevation-4"></div>
   </div>
 </template>
 
@@ -14,6 +14,7 @@ import {
   mapOsmdToEntryTiming,
   mapOsmdToActiveNoteTimeline,
 } from './playbackHelpers';
+import { getScoreDetailsFromOsmd } from './helpers';
 
 export default {
   name: 'Score',
@@ -96,6 +97,7 @@ export default {
       const { osmd } = this;
       const { cursor } = osmd;
 
+      this.$store.commit('SET_SCORE_DETAILS', getScoreDetailsFromOsmd(osmd));
       this.setScoreNotes(mapOsmdToNotes(osmd));
       this.setScoreEntryTiming(mapOsmdToEntryTiming(osmd));
       this.setScoreNotesThroughTime(mapOsmdToActiveNoteTimeline(osmd));
@@ -125,12 +127,15 @@ export default {
   width: 100%;
   margin: 0;
   padding: 0;
-  overflow: scroll;
+  display: flex;
+  height: 100%;
 }
 
 .score-container {
-  width: 1200px;
+  max-width: 1200px;
+  width: 100%;
   overflow: hidden;
-  margin: 0 auto;
+  margin: auto;
+  padding-bottom: 64px;
 }
 </style>

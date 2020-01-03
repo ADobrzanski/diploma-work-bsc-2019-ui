@@ -1,34 +1,37 @@
 <template>
-  <v-chip color="accent" @click="$emit('click', true)" >
+  <v-btn rounded flat
+    class="px-4"
+    :min-width=100
+    :elevation=0
+    :loading="$apollo.queries.currentUser.loading"
+    color="accent"
+    @click="$emit('click', true)" >
     <font-awesome-icon :icon="icon" class="mr-2" />
     {{text}}
-  </v-chip>
+</v-btn>
 </template>
 
 <script>
-import { mapState } from 'vuex';
+// eslint-disable-next-line no-unused-vars
+import gql from 'graphql-tag';
+import { currentUser } from '../api/queries';
 
 export default {
   name: 'user-chip',
+  data() {
+    return { user: null };
+  },
   computed: {
-    ...mapState({
-      username: (state) => {
-        if (
-          !!state.application.user
-          && !!state.application.user.id
-        ) {
-          return state.application.user.name;
-        }
-
-        return null;
-      },
-    }),
     icon() {
-      return this.username ? 'user-circle' : 'key';
+      return this.currentUser ? 'user-circle' : 'key';
     },
     text() {
-      return this.username || 'Zaloguj się!';
+      console.log(this.currentUser);
+      return this.currentUser ? this.currentUser.name : 'Zaloguj się!';
     },
+  },
+  apollo: {
+    currentUser,
   },
 };
 </script>

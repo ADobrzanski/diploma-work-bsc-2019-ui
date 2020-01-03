@@ -17,18 +17,18 @@
 </template>
 
 <script>
-import { mapState } from 'vuex';
+import { currentUser } from '../../api/queries';
 import GuestForm from './guestForm.vue';
 import UserForm from './userForm.vue';
 
 export default {
   name: 'auth-modal',
+  apollo: { user: currentUser },
   components: { GuestForm, UserForm },
   props: ['value'],
+  data() { return { user: null }; },
   computed: {
-    ...mapState({
-      isLoggedIn: state => !!state.application.user && !!state.application.user.id,
-    }),
+    isLoggedIn() { return !!this.user; },
     modal: {
       get() { return this.value; },
       set(val) { this.$emit('input', val); },
