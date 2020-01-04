@@ -51,7 +51,7 @@
 
 <script>
 import { currentUser } from '../api/queries';
-import { uploadScore as uploadMutation } from '../api/mutations';
+import { uploadScore as upload } from '../api/mutations';
 
 export default {
   name: 'upload-dialog',
@@ -82,7 +82,7 @@ export default {
   },
   methods: {
     uploadScore() {
-      this.$apollo.mutate(uploadMutation(
+      this.$apollo.mutate(upload(
         this.scoreDetails,
         this.file,
       )).then(() => {

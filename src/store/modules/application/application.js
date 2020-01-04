@@ -6,8 +6,9 @@ export default {
     mode: APP_MODE_PLAYBACK,
     inputNotes: [],
     errors: [],
-    user: null,
     authDialog: false,
+    file: null,
+    fileSynced: false,
     uploadDialog: false,
   },
   mutations: {
@@ -20,19 +21,31 @@ export default {
     SET_APPLICATION_ERRORS(state, errors) {
       state.errors = errors;
     },
-    SET_APPLICATION_USER(state, user) {
-      state.user = user;
-    },
     SET_APPLICATION_AUTH_DIALOG(state, show) {
       state.authDialog = show;
     },
     SET_APPLICATION_UPLOAD_DIALOG(state, show) {
       state.uploadDialog = show;
     },
+    SET_APPLICATION_FILE(state, file) {
+      state.file = file;
+    },
+    SET_APPLICATION_FILE_SYNCED(state, fileSynced) {
+      state.fileSynced = fileSynced;
+    },
   },
   actions: {
     setInputNotes({ commit }, notes) {
       commit('SET_INPUT_NOTES', notes);
+    },
+    setLocalFile({ commit }, file) {
+      commit('SET_APPLICATION_FILE', file);
+      commit('SET_APPLICATION_FILE_SYNCED', false);
+      commit('SET_APPLICATION_UPLOAD_DIALOG', true);
+    },
+    setRemoteFile({ commit }, file) {
+      commit('SET_APPLICATION_FILE', file);
+      commit('SET_APPLICATION_FILE_SYNCED', true);
     },
   },
   getters: {

@@ -2,6 +2,7 @@
     <div class="player-container">
       <player />
       <training-controler />
+      <transforming-menu />
       <playback-controls />
       <drop-zone :onDrop="receiveLocalFile">
         <score-animator>
@@ -41,6 +42,7 @@ import PianoKeyboard from '../components/PianoKeyboard/Keyboard.vue';
 import ModalTrainingFinished from '../components/Training/ModalFinished.vue';
 import AuthModal from '../components/AuthDialog/index.vue';
 import UploadDialog from '../components/UploadDialog.vue';
+import TransformingMenu from '../components/TransformingMenu/index.vue';
 import { APP_MODE_LEARNING, APP_MODE_PLAYBACK } from '../store/modules/application/consts';
 
 export default {
@@ -57,17 +59,19 @@ export default {
     ModalTrainingFinished,
     AuthModal,
     UploadDialog,
+    TransformingMenu,
   },
   data() {
     return {
       user: null,
       xml: exampleMxml,
-      file: null,
       dialog: false,
     };
   },
   computed: {
     ...mapState({
+      file: state => state.application.file,
+      isFileSynced: state => state.application.fileSynced,
       isTraining: state => state.application.mode === APP_MODE_LEARNING,
       authDialogVisible: state => state.application.authDialog,
       uploadDialogVisible: state => state.application.uploadDialog,
@@ -82,15 +86,18 @@ export default {
       set(val) { this.$store.commit('SET_APPLICATION_UPLOAD_DIALOG', val); },
     },
   },
+  watch: {
+    file(newVal) {
+      newVal.text().then((text) => { this.xml = text; });
+    },
+  },
   methods: {
     ...mapActions([
       'pausePlayback',
       'stopPlayback',
     ]),
     receiveLocalFile(file) {
-      this.file = file;
-      this.uploadDialog = true;
-      file.text().then((text) => { this.xml = text; });
+      this.$store.dispatch('setLocalFile', file);
     },
     handleEndReached() {
       if (this.isTraining) {

@@ -7,3 +7,10 @@ export const currentUser = (() => ({
   }`,
   update: data => data.me,
 }))();
+
+export const publicScores = (() => ({
+  query: gql`query {
+    publicScores { id title subtitle composer lyricist link }
+  }`,
+  update: data => data.publicScores,
+}))();

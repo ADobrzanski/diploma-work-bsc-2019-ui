@@ -33,14 +33,12 @@
           inset
           hide-details ></v-switch>
      </div>
-      <user-chip @click="showAuthDialog"/>
    </div>
 </template>
 
 <script>
 import { mapGetters, mapActions } from 'vuex';
 import PlaybackButtonVue from './PlaybackButton.vue';
-import UserChip from './UserChip.vue';
 import {
   APP_MODE_LEARNING,
   APP_MODE_PLAYBACK,
@@ -50,7 +48,6 @@ export default {
   name: 'playback-controls',
   components: {
     'playback-button': PlaybackButtonVue,
-    UserChip,
   },
   data() {
     return {
@@ -102,9 +99,6 @@ export default {
       } else {
         this.startPlayback({ startTimestamp: this.AudioContext.currentTime });
       }
-    },
-    showAuthDialog() {
-      this.$store.commit('SET_APPLICATION_AUTH_DIALOG', true);
     },
   },
 };
