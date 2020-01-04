@@ -88,6 +88,8 @@ export default {
         this.start();
       } else {
         cancelAnimationFrame(this.raf);
+        this.filterNotes();
+        this.awaitActiveChange();
       }
     },
     playbackTimestamp(newVal, oldVal) {

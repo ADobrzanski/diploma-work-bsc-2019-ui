@@ -17,6 +17,7 @@ import {
   appendType,
   appendWidth,
   appendOffset,
+  addRoundRectToCanvas,
 } from './utils';
 import {
   WHITE_KEY_DROPLET_COLOR,
@@ -27,6 +28,8 @@ export default {
   name: 'waterfall',
   data() {
     return {
+      maxWidth: null,
+      containerWidth: null,
       resizeListener: null,
       imageLoadListener: null,
       dropletSchemas: null,
@@ -67,12 +70,26 @@ export default {
 
 
   computed: {
+    midiRange() {
+      const firstMidiCode = getMidiCodeFromKey(this.keyboard.startKey);
+      let lastMidiCode = firstMidiCode + this.keyboard.keyCount;
+      if (getKeyTypeFromMidiCode(lastMidiCode) === KEY_WHITE) lastMidiCode += 1;
+      return [firstMidiCode, lastMidiCode];
+    },
     waterfallImgStyle() {
       return { transform: `translateY(${this.imgOffset}px)` };
     },
     droplets() {
       const { sToPx, dropletSchemas } = this;
       if (!dropletSchemas) return [];
+
+      const [firstMidi, lastMidi] = this.midiRange;
+      const fitsKeyboard = ({ halfTone }) => halfTone >= firstMidi && halfTone <= lastMidi;
+
+      const sanitizedNotes = R.pipe(
+        R.filter(R.prop('audible')),
+        R.filter(fitsKeyboard),
+      )(this.notes);
 
       return R.map(
         note => ({
@@ -85,7 +102,7 @@ export default {
             : BLACK_KEY_DROPLET_COLOR,
           type: dropletSchemas[note.halfTone].type,
         }),
-      )(R.filter(R.prop('audible'), this.notes)); // TODO swap for props.notes
+      )(sanitizedNotes); // TODO swap for props.notes
     },
     waterfallImgUrl() {
       return this.prerender(this.droplets);
@@ -109,12 +126,38 @@ export default {
       this.drawImage();
       this.drawFrame();
     },
+    containerWidth(newVal, oldVal) {
+      if (newVal === oldVal) return;
+      if (newVal > this.maxContainerWidth) {
+        this.maxContainerWidth = newVal;
+      }
+    },
+    maxContainerWidth(newVal, oldVal) {
+      if (newVal === oldVal) return;
+      this.calculateMidiToDropletMapping();
+    },
+    midiRange(newVal, oldVal) {
+      if (newVal === oldVal) return;
+      const [newStart, newEnd] = newVal;
+      const [oldStart, oldEnd] = oldVal;
+
+      if (
+        newStart < oldStart
+        || newEnd > oldEnd
+      ) {
+        this.calculateMidiToDropletMapping();
+      }
+    },
   },
 
 
   mounted() {
+    addRoundRectToCanvas();
+
+    this.maxContainerWidth = this.$refs.waterfall.getBoundingClientRect().width;
+    this.containerWidth = this.maxContainerWidth;
     this.registerListeners();
-    this.addRoundedRectPrototype();
+
     this.calculateMidiToDropletMapping();
   },
 
@@ -126,39 +169,21 @@ export default {
 
   methods: {
     registerListeners() {
-      this.resizeListener = window.addEventListener('resize', () => {
-        this.calculateMidiToDropletMapping();
-      });
+      this.resizeListener = window.addEventListener(
+        'resize',
+        () => { this.containerWidth = this.$refs.waterfall.getBoundingClientRect().width; },
+      );
 
       this.imageLoadListener = this.$refs.dropletsImg.addEventListener(
-        'load', () => { this.drawFrame(); },
+        'load',
+        () => { this.drawFrame(); },
       );
     },
-    addRoundedRectPrototype() {
-      // eslint-disable-next-line
-      CanvasRenderingContext2D.prototype.roundRect = function (x, y, width, height, radius) {
-        /* eslint-disable no-param-reassign */
-        if (Math.abs(width) < 2 * radius) radius = width / 2;
-        if (Math.abs(height) < 2 * radius) radius = height / 2;
-        this.beginPath();
-        this.moveTo(x + radius, y);
-        this.arcTo(x + width, y, x + width, y + height, radius);
-        this.arcTo(x + width, y + height, x, y + height, radius);
-        this.arcTo(x, y + height, x, y, radius);
-        this.arcTo(x, y, x + width, y, radius);
-        this.closePath();
-        return this;
-      };
-    },
     calculateMidiToDropletMapping() {
-      const firstMidiCode = getMidiCodeFromKey(this.keyboard.startKey);
-      let lastMidiCode = firstMidiCode + this.keyboard.keyCount;
-      if (getKeyTypeFromMidiCode(lastMidiCode) === KEY_WHITE) lastMidiCode += 1;
-
+      const [firstMidiCode, lastMidiCode] = this.midiRange;
       const keyCodes = R.range(firstMidiCode, lastMidiCode);
 
-      const containerWidth = this.$refs.waterfall.getBoundingClientRect().width;
-      const whiteKeyWidth = containerWidth / whiteKeyCount(keyCodes);
+      const whiteKeyWidth = this.maxContainerWidth / whiteKeyCount(keyCodes);
 
       const dropletsSchemaData = R.pipe(
         R.map(R.objOf('code')),

@@ -1,5 +1,4 @@
 <template>
-  <section>
     <waterfall
       :active="isPlaybackPlaying"
       :now="now"
@@ -7,7 +6,6 @@
       :songTimestamp="playbackTimestamp"
       :notes="scoreNotes"
       :keyboard="keyboard" />
-  </section>
 </template>
 
 <script>
