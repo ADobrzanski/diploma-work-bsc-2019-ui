@@ -1,7 +1,7 @@
 <template>
   <v-card
     style="position: absolute; z-index: 20;"
-    class="mx-8 my-12"
+    class="mx-8 my-4"
     width="256"
   >
     <v-tabs
@@ -16,7 +16,9 @@
       </v-tab-item>
 
       <v-tab-item>
-        <search-panel @click:hamburger="searchMode = false"/>
+        <search-panel
+          :active="searchMode"
+          @click:hamburger="searchMode = false"/>
       </v-tab-item>
 
     </v-tabs>

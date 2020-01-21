@@ -2,8 +2,10 @@
     <div class="player-container">
       <player />
       <training-controler />
-      <transforming-menu />
+      <div style="position: absolute">
       <playback-controls />
+      <transforming-menu />
+      </div>
       <drop-zone :onDrop="receiveLocalFile">
         <score-animator>
           <score v-bind:xml="xml" />
@@ -34,7 +36,7 @@ import Score from '../components/Score/Score.vue';
 import ScoreAnimator from '../components/Score/ScoreAnimator.vue';
 import DropZone from '../components/DropZone.vue';
 import exampleMxml from '../assets/BrookeWestSample.musicxml';
-import PlaybackControlsVue from '../components/PlaybackControls.vue';
+import PlaybackControls from '../components/PlaybackControls.vue';
 import TrainingControler from '../components/Training/Controller.vue';
 import Player from '../components/Player/Player.vue';
 import Waterfall from '../components/Waterfall/index.vue';
@@ -51,7 +53,7 @@ export default {
     Score,
     'score-animator': ScoreAnimator,
     DropZone,
-    'playback-controls': PlaybackControlsVue,
+    PlaybackControls,
     TrainingControler,
     Player,
     waterfall: Waterfall,

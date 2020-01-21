@@ -191,9 +191,8 @@ export default {
           password,
         },
       }).then((data) => {
-        const { user, token } = data.data.login;
+        const { token } = data.data.login;
         onLogin(this.$apollo.provider.defaultClient, token);
-        this.$store.commit('SET_APPLICATION_USER', user);
       }).catch((error) => {
         this.showAlertError();
         console.error(error);

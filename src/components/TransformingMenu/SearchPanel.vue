@@ -6,27 +6,15 @@
               class="my-2"
               append-icon="mdi-magnify"
               @click:prepend="$emit('click:hamburger', true)"
+              @input="text => querySubject.next(text)"
               prepend-icon="mdi-menu"/>
       </v-list-item>
     </v-list>
 
+    <v-progress-linear query indeterminate :active="isDataLoading" />
     <v-divider></v-divider>
 
-    <v-list nav dense v-if="$apollo.queries.songs.loading">
-      <v-skeleton-loader
-        class="mx-auto"
-        type="list-item-two-line">
-      </v-skeleton-loader>
-      <v-skeleton-loader
-        class="mx-auto"
-        type="list-item-two-line">
-      </v-skeleton-loader>
-      <v-skeleton-loader
-        class="mx-auto"
-        type="list-item-two-line">
-      </v-skeleton-loader>
-    </v-list>
-    <v-list nav dense v-if="!$apollo.queries.songs.loading">
+    <v-list nav dense>
         <v-list-item link
           v-for="(song, i) in songs"
           :key="i"
@@ -55,24 +43,61 @@
 </template>
 
 <script>
-import { publicScores } from '../../api/queries';
+/* eslint-disable no-param-reassign */
+import * as R from 'ramda';
+import { Subject } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
+
+import { searchScores } from '../../api/queries';
+// import { publicScores } from '../../api/queries';
 
 export default {
   name: 'search-panel',
+  props: ['active'],
+  /* watch: {
+    active(newVal, oldVal) {
+      if (!R.equals(newVal, oldVal)) {
+        if (newVal) {
+          this.$apollo.queries.songs.refetch();
+        }
+      }
+    },
+  },
   apollo: {
     songs: publicScores,
-  },
+  }, */
   data() {
     return {
       songs: [],
+      querySubject: new Subject(),
+      isDataLoading: false,
     };
   },
+  mounted() {
+    this.querySubject.pipe(
+      debounceTime(300),
+    ).subscribe(this.fetchSearchResult);
+  },
   methods: {
-    fetchScore(link) {
+    log(a) { console.log(a); },
+    fetchSearchResult(searchPhrase) {
+      if (!R.isEmpty(searchPhrase)) {
+        this.isDataLoading = true;
+        this.$apollo.query(searchScores(searchPhrase))
+          .then((response) => {
+            this.songs = response.data.searchScores;
+          })
+          .catch(error => console.error(error))
+          .finally(() => {
+            this.isDataLoading = false;
+          });
+      }
+    },
+    fetchScore(link, callback = () => {}) {
       fetch(link)
         .then((response) => {
           if (!response.ok) {
-            console.error(`Fetching score from ${link} failed.`);
+            console.error('Fetching score failed.');
           } else {
             response.blob().then(
               blob => this.$store.dispatch('setRemoteFile', blob),
@@ -80,7 +105,7 @@ export default {
           }
         }).catch(() => {
           console.error('Network error during score fetching.');
-        });
+        }).finally(callback);
     },
   },
 };

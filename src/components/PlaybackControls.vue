@@ -1,67 +1,60 @@
 <template>
-   <div class="playback-controls px-4 py-2">
-     <div class="d-flex align-center">
-        <playback-button
-          v-if="false"
-          class="playback-button"
-          icon="step-backward"
-          :onClick="handleStepBackward" />
-        <playback-button
-          v-if="!learningMode"
-          class="playback-button"
-          :icon="playPauseIcon"
-          :onClick="toggleIsPlaying" />
-        <playback-button
-          v-if="!learningMode"
-          class="playback-button"
-          icon="stop"
-          :onClick="stopPlayback" />
-        <playback-button
-          v-if="!learningMode"
-          class="playback-button"
-          icon="step-forward"
-          :onClick="handleStepForward" />
-        <playback-button
-          v-if="learningMode"
-          class="playback-button"
-          icon="undo"
-          :onClick="stopPlayback" />
-        <v-switch
-          label="Learning mode"
-          v-model="learningMode"
-          class="ma-0 pa-0"
-          inset
-          hide-details ></v-switch>
-     </div>
-   </div>
+  <v-card
+    class="mt-8 ml-8 pa-2"
+    width="256"
+    color="primary"
+  >
+    <v-btn icon
+      style='z-index: 20'
+      v-for="(btn, i) in buttons"
+      :key="i"
+      @click="btn.callback()">
+      <v-icon>{{btn.icon()}}</v-icon>
+    </v-btn>
+
+    <v-divider vertical
+      class="mx-2" color="accent" inset></v-divider>
+
+    <v-btn dense
+      elevation="0"
+      color="orange"
+      @click="learningMode = !learningMode"
+    >
+      <v-icon class="mr-2">{{trainingBtnIcon}}</v-icon>{{trainingBtnText}}
+    </v-btn>
+  </v-card>
 </template>
 
 <script>
 import { mapGetters, mapActions } from 'vuex';
-import PlaybackButtonVue from './PlaybackButton.vue';
-import {
-  APP_MODE_LEARNING,
-  APP_MODE_PLAYBACK,
-} from '../store/modules/application/consts';
+import { APP_MODE_LEARNING, APP_MODE_PLAYBACK } from '../store/modules/application/consts';
 
 export default {
   name: 'playback-controls',
-  components: {
-    'playback-button': PlaybackButtonVue,
-  },
-  data() {
-    return {
-      me: { id: -1, name: '', email: '' },
-    };
-  },
   computed: {
-    ...mapGetters({
-      isPlaying: 'isPlaybackPlaying',
-      appMode: 'applicationMode',
-    }),
+    ...mapGetters([
+      'isPlaybackPlaying',
+      'applicationMode',
+    ]),
+    playPauseCallback() {
+      return this.isPlaybackPlaying
+        ? () => this.pausePlayback({ pauseTimestamp: this.now() })
+        : () => this.startPlayback({ startTimestamp: this.now() });
+    },
     playPauseIcon() {
-      const { isPlaying } = this;
-      return isPlaying ? 'pause' : 'play';
+      return this.isPlaybackPlaying
+        ? 'mdi-pause'
+        : 'mdi-play';
+    },
+    trainingBtnText() {
+      return this.learningMode
+        ? 'Stop'
+        : 'Graj';
+    },
+    trainingBtnIcon() {
+      return this.learningMode
+        ? 'mdi-close'
+        : 'mdi-piano';
     },
     learningMode: {
       get() {
@@ -84,45 +77,27 @@ export default {
       'stopPlayback',
       'increaseScoreCurrentEntryId',
     ]),
-    handleStop() {
-      this.stopPlayback();
+    now() {
+      return this.AudioContext.currentTime;
     },
-    handleStepForward() {
-      this.increaseScoreCurrentEntryId();
-    },
-    handleStepBackward() {
-    },
-    toggleIsPlaying() {
-      const { isPlaying } = this;
-      if (isPlaying) {
-        this.pausePlayback({ pauseTimestamp: this.AudioContext.currentTime });
-      } else {
-        this.startPlayback({ startTimestamp: this.AudioContext.currentTime });
-      }
-    },
+  },
+  data() {
+    return {
+      buttons: [
+        {
+          icon: () => this.playPauseIcon,
+          callback: () => this.playPauseCallback(),
+        },
+        {
+          icon: () => 'mdi-skip-next',
+          callback: () => this.increaseScoreCurrentEntryId(),
+        },
+        {
+          icon: () => 'mdi-stop',
+          callback: () => this.stopPlayback(),
+        },
+      ],
+    };
   },
 };
 </script>
-
-<style lang="scss" scoped>
-  .playback-controls {
-    display: flex;
-    flex-direction: row;
-    width: 100%;
-    justify-content: space-between;
-    align-items: center;
-    background-color: lightgreen;
-  }
-
-  .playback-button {
-    margin: 0 10px;
-
-    &:focus {
-      outline: 0;
-    }
-
-    &:active {
-      color: gray;
-    }
-  }
-</style>
