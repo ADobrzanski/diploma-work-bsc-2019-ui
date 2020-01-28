@@ -6,10 +6,11 @@
     :items="items"
     hide-default-footer
     class="elevation-2"
+    @click:row="payload => $emit('click:row', payload)"
   >
 
     <template v-slot:item.favourite="{ item }">
-      <v-btn icon @click.prevent="toggleFavourite(item)">
+      <v-btn icon @click.prevent="$emit('click:favourite', item)">
         <v-icon>{{item.favourite ? 'mdi-heart' : 'mdi-heart-outline'}}</v-icon>
       </v-btn>
     </template>
@@ -40,10 +41,6 @@ export default {
         page: 1,
         pagesTotal: 1,
       }),
-    },
-    toggleFavourite: {
-      type: Function,
-      default: (song) => { console.log(`Toggle favourite on ${song.title}`); },
     },
   },
   data() {

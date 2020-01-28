@@ -17,7 +17,7 @@ export const publicScores = (() => ({
 
 export const searchScores = phrase => ({
   query: gql`query ($phrase: String!){
-    searchScores(phrase: $phrase) { id title subtitle composer lyricist link }
+    searchScores(phrase: $phrase) { id title subtitle composer lyricist link favourite }
   }`,
   variables: {
     phrase,
