@@ -8,12 +8,12 @@ export const currentUser = (() => ({
   update: data => data.me,
 }))();
 
-export const publicScores = (() => ({
+export const publicScores = (destination = 'publicScores') => ({
   query: gql`query {
-    publicScores { id title subtitle composer lyricist link }
+    publicScores { id title subtitle composer lyricist link favourite }
   }`,
-  update: data => data.publicScores,
-}))();
+  update: data => data[destination],
+});
 
 export const searchScores = phrase => ({
   query: gql`query ($phrase: String!){

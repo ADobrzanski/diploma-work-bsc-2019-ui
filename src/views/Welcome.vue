@@ -26,8 +26,7 @@ import * as R from 'ramda';
 import { Subject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 
-import { searchScores } from '../api/queries';
-// import { publicScores } from '../../api/queries';
+import { searchScores, publicScores } from '../api/queries';
 
 import NavigationDrawer from '../components/Welcome/NavigationDrawer.vue';
 import ScoresTable from '../components/Welcome/ScoresTable.vue';
@@ -37,6 +36,9 @@ export default {
     'navigation-drawer': NavigationDrawer,
     ScoresTable,
   },
+  apollo: {
+    publicScores: publicScores('publicScores'),
+  },
   data() {
     return {
       isDataLoading: false,
@@ -44,17 +46,22 @@ export default {
       searchSubject: new Subject(),
       favouriteSubject: new Subject(),
       scores: [],
+      publicScores: [],
     };
   },
   watch: {
-    searchPhrase(newVal, oldVal) {
-      if (!R.equals(newVal, oldVal)) {
-        if (newVal === '') {
-          this.scores = [];
-        } else {
-          this.fetchSearchResults(newVal);
-        }
+    searchPhrase(phrase) {
+      if (phrase !== '') {
+        this.fetchSearchResults(phrase);
       }
+    },
+    publicScores: {
+      handler() {
+        if (this.searchPhrase === '') {
+          this.scores = this.publicScores;
+        }
+      },
+      immediate: true,
     },
   },
   methods: {
