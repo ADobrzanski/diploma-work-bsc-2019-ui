@@ -13,7 +13,11 @@ const routes = [
   },
   {
     path: '/welcome',
-    name: 'welcome',
+    redirect: '/welcome/home',
+  },
+  {
+    path: '/welcome/:option',
+    props: true,
     component: Welcome,
   },
 ];

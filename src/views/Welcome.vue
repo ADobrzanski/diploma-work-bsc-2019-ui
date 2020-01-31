@@ -12,77 +12,51 @@
 
         <v-spacer></v-spacer>
 
-        <scores-table
-          :items="scores"
-          @click:row="handleScoreClick"
-          @click:favourite="toggleScoreFavourite"
-        />
+        <scores-provider
+          :option="option"
+          :searchPhrase="searchPhrase"
+        >
+          <template #default="{ items, toggleFavourite }">
+            <scores-table
+              :items="items"
+              @click:row="handleScoreClick"
+              @click:favourite="toggleFavourite"
+            />
+          </template>
+        </scores-provider>
     </div>
   </v-container>
 </template>
 
 <script>
-import * as R from 'ramda';
 import { Subject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 
-import { searchScores, publicScores } from '../api/queries';
-
 import NavigationDrawer from '../components/Welcome/NavigationDrawer.vue';
 import ScoresTable from '../components/Welcome/ScoresTable.vue';
+import ScoresProvider from '../components/Welcome/ScoresProvider.vue';
 
 export default {
   components: {
     'navigation-drawer': NavigationDrawer,
     ScoresTable,
+    ScoresProvider,
   },
-  apollo: {
-    publicScores: publicScores('publicScores'),
-  },
+  props: ['option'],
   data() {
     return {
       isDataLoading: false,
       searchPhrase: '',
       searchSubject: new Subject(),
-      favouriteSubject: new Subject(),
-      scores: [],
-      publicScores: [],
     };
   },
   watch: {
-    searchPhrase(phrase) {
-      if (phrase !== '') {
-        this.fetchSearchResults(phrase);
-      }
-    },
-    publicScores: {
-      handler() {
-        if (this.searchPhrase === '') {
-          this.scores = this.publicScores;
-        }
-      },
-      immediate: true,
+    option() {
+      this.searchPhrase = '';
     },
   },
   methods: {
-    log(a) { console.log(a); },
-    fetchSearchResults(searchPhrase) {
-      if (!R.isEmpty(searchPhrase)) {
-        this.isDataLoading = true;
-        this.$apollo.query(searchScores(searchPhrase))
-          .then((response) => {
-            this.scores = response.data.searchScores;
-          })
-          .catch(error => console.error(error))
-          .finally(() => {
-            this.isDataLoading = false;
-          });
-      }
-    },
     handleScoreClick() {
-
-    },
-    toggleScoreFavourite() {
 
     },
   },

@@ -18,3 +18,14 @@ export const uploadScore = (scoreDetails, file) => ({
     file,
   },
 });
+
+export const setFavourite = (scoreId, favourite) => ({
+  mutation: gql`mutation ($scoreId: Int! $favourite: Boolean!) {
+    setFavourite(scoreId: $scoreId, favourite: $favourite) {
+      id
+      title
+      favourite
+    }
+  }`,
+  variables: { scoreId, favourite },
+});

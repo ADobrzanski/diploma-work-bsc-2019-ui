@@ -71,7 +71,7 @@ export default {
     },
     alertMessage() {
       return this.success
-        ? 'Konto utworzono pomyślnie! 🎉'
+        ? 'Przesłano pomyślnie! 🎉'
         : 'Coś poszło nie tak 😵';
     },
     alertType() {

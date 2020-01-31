@@ -13,6 +13,7 @@ export const publicScores = (destination = 'publicScores') => ({
     publicScores { id title subtitle composer lyricist link favourite }
   }`,
   update: data => data[destination],
+  fetchPolicy: 'network-only',
 });
 
 export const searchScores = phrase => ({
@@ -22,4 +23,16 @@ export const searchScores = phrase => ({
   variables: {
     phrase,
   },
+  fetchPolicy: 'network-only',
+});
+
+export const favouriteScores = searchPhrase => ({
+  query: gql`query ($searchPhrase: String) {
+    me { favourites(search: $searchPhrase) {
+      id title subtitle composer lyricist link favourite
+    } }
+  }`,
+  variables: { searchPhrase },
+  update: data => data.me.favourites,
+  fetchPolicy: 'network-only',
 });

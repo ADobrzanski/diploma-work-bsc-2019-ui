@@ -9,6 +9,7 @@
           <v-list-item
             v-for="(item, i) in items"
             :key=i
+            @click="$router.push(item.linkTo).catch(_ => {})"
           >
             <v-list-item-icon>
               <v-icon>{{item.icon}}</v-icon>
@@ -32,10 +33,14 @@ export default {
   data() {
     return {
       items: [
-        { text: 'Wszystkie utwory', icon: 'mdi-file-multiple-outline' },
-        { text: 'Ostatnio otwierane', icon: 'mdi-history' },
-        { text: 'Ulubione', icon: 'mdi-heart' },
-        { text: 'Moje utwory', icon: 'mdi-file-music-outline' },
+        {
+          text: 'Wszystkie utwory',
+          icon: 'mdi-file-multiple-outline',
+          linkTo: '/welcome/home',
+        },
+        { text: 'Ostatnio otwierane', icon: 'mdi-history', linkTo: '/welcome/recent' },
+        { text: 'Ulubione', icon: 'mdi-heart', linkTo: '/welcome/favourite' },
+        { text: 'Moje utwory', icon: 'mdi-file-music-outline', linkTo: '/welcome/private' },
       ],
     };
   },
