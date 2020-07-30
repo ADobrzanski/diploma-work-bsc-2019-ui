@@ -1,10 +1,11 @@
 <template>
-  <div ref="score-wrapper" class="score-wrapper">
+  <div ref="scoreWrapper" class="score-wrapper">
     <div id="score-container" class="score-container elevation-4"></div>
   </div>
 </template>
 
 <script>
+import * as R from 'ramda';
 import { mapGetters, mapActions } from 'vuex';
 import { OpenSheetMusicDisplay } from 'opensheetmusicdisplay';
 
@@ -29,8 +30,15 @@ export default {
     }),
   },
   watch: {
-    xml() {
-      this.initializeSheetData();
+    xml: {
+      handler(newVal) {
+        if (R.isEmpty(newVal)) {
+          this.$refs.scoreWrapper.style.opacity = 0;
+        } else {
+          this.$refs.scoreWrapper.style.opacity = 1;
+          this.initializeSheetData();
+        }
+      },
     },
     currentEntryId(newId, oldId) {
       if (newId === 0) {
@@ -65,7 +73,11 @@ export default {
   },
   mounted() {
     this.initializeOSMD();
-    this.initializeSheetData();
+    if (!R.isEmpty(this.xml)) {
+      this.initializeSheetData();
+    } else {
+      this.$refs.style.opacity = 0;
+    }
   },
   methods: {
     ...mapActions({

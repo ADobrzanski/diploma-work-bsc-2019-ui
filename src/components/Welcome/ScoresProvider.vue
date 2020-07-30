@@ -2,7 +2,12 @@
 import * as R from 'ramda';
 // import gql from 'graphql-tag';
 
-import { publicScores, favouriteScores, searchScores } from '../../api/queries';
+import {
+  publicScores,
+  favouriteScores,
+  searchScores,
+  personalScores,
+} from '../../api/queries';
 import { setFavourite } from '../../api/mutations';
 
 export default {
@@ -13,13 +18,19 @@ export default {
     });
   },
   data() { return { scores: [] }; },
-  props: ['option', 'searchPhrase'],
+  props: ['category', 'searchPhrase'],
   watch: {
-    option: {
+    category: {
       handler() {
-        this.fetch(this.searchPhrase)
-          .then((data) => { this.scores = data; })
-          .catch(err => console.error(err));
+        if (this.fetch) {
+          const search = this.searchPhrase || '';
+          this.fetch(search)
+            .then((data) => { this.scores = data; })
+            .catch((err) => {
+              console.error(err);
+              this.scores = [];
+            });
+        }
       },
       immediate: true,
     },
@@ -34,38 +45,48 @@ export default {
     config() {
       return [
         {
-          option: 'home',
+          category: 'all',
           fetch: this.fetchAllScores,
           search: this.searchAllScores,
         },
         {
-          option: 'favourite',
+          category: 'favourite',
           fetch: this.fetchFavourites,
           search: this.fetchFavourites,
+        },
+        {
+          category: 'private',
+          fetch: this.fetchPersonalScores,
+          search: this.fetchPersonalScores,
         },
       ];
     },
     fetch() {
-      const { option, searchPhrase } = this;
-      const config = this.config.find(item => item.option === option);
+      const { config, category, searchPhrase } = this;
+      const { fetch, search } = R.find(R.propEq('category', category))(config);
 
       return R.isEmpty(searchPhrase)
-        ? config.fetch
-        : config.search;
+        ? fetch
+        : search;
     },
   },
   methods: {
     fetchAllScores() {
       return this.$apollo.query(publicScores())
-        .then(({ data }) => data.publicScores);
+        .then(({ data }) => data.scores);
     },
     searchAllScores(phrase) {
       return this.$apollo.query(searchScores(phrase))
-        .then(({ data }) => data.searchScores);
+        .then(({ data }) => data.scores);
     },
     fetchFavourites(phrase) {
       return this.$apollo.query(favouriteScores(phrase))
-        .then(({ data }) => data.me.favourites);
+        // eslint-disable-next-line arrow-body-style
+        .then(({ data }) => {
+          return data.me
+            ? data.me.favourites
+            : [];
+        }).catch(console.err);
     },
     toggleFavourite(score) {
       this.$apollo
@@ -73,11 +94,20 @@ export default {
         .then(() => {
           this.scores = [...R.reject(R.equals(score), this.scores)];
 
-          if (this.option !== 'favourite') {
+          if (this.category !== 'favourite') {
             const updatedScore = { ...score, favourite: !score.favourite };
             this.scores = [...this.scores, updatedScore];
           }
         }).catch(e => console.error(e));
+    },
+    fetchPersonalScores(phrase) {
+      return this.$apollo.query(personalScores(phrase))
+        // eslint-disable-next-line arrow-body-style
+        .then(({ data }) => {
+          return data.me
+            ? data.me.uploads
+            : [];
+        }).catch(console.err);
     },
   },
 };

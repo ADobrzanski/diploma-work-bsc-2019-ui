@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <navigation-drawer :expanded="true"/>
+    <navigation-drawer :category="category"/>
     <div class="main">
         <div class="font-weight-thin text-left pa-2 mt-8 headline">Czego nauczysz się dzisiaj?</div>
         <v-text-field
@@ -13,7 +13,7 @@
         <v-spacer></v-spacer>
 
         <scores-provider
-          :option="option"
+          :category="category"
           :searchPhrase="searchPhrase"
         >
           <template #default="{ items, toggleFavourite }">
@@ -25,24 +25,28 @@
           </template>
         </scores-provider>
     </div>
+    <login-modal v-model="authDialog"></login-modal>
   </v-container>
 </template>
 
 <script>
 import { Subject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
+import { mapState } from 'vuex';
 
 import NavigationDrawer from '../components/Welcome/NavigationDrawer.vue';
 import ScoresTable from '../components/Welcome/ScoresTable.vue';
 import ScoresProvider from '../components/Welcome/ScoresProvider.vue';
+import LoginModal from '../components/AuthDialog/index.vue';
 
 export default {
   components: {
     'navigation-drawer': NavigationDrawer,
     ScoresTable,
     ScoresProvider,
+    LoginModal,
   },
-  props: ['option'],
+  props: ['category'],
   data() {
     return {
       isDataLoading: false,
@@ -50,14 +54,24 @@ export default {
       searchSubject: new Subject(),
     };
   },
+  computed: {
+    ...mapState({ authDialogVisible: state => state.application.authDialog }),
+    authDialog: {
+      get() { return this.authDialogVisible; },
+      set(newVal) { this.$store.commit('SET_APPLICATION_AUTH_DIALOG', newVal); },
+    },
+  },
   watch: {
     option() {
       this.searchPhrase = '';
     },
   },
   methods: {
-    handleScoreClick() {
-
+    handleScoreClick(item) {
+      this.$router.push({
+        name: 'song',
+        params: { id: item.id },
+      }).catch(console.error);
     },
   },
   mounted() {

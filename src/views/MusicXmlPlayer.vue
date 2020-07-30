@@ -3,8 +3,8 @@
       <player />
       <training-controler />
       <div style="position: absolute">
-      <playback-controls />
-      <transforming-menu />
+        <playback-controls />
+        <transforming-menu />
       </div>
       <drop-zone :onDrop="receiveLocalFile">
         <score-animator>
@@ -35,7 +35,7 @@ import { mapActions, mapState } from 'vuex';
 import Score from '../components/Score/Score.vue';
 import ScoreAnimator from '../components/Score/ScoreAnimator.vue';
 import DropZone from '../components/DropZone.vue';
-import exampleMxml from '../assets/BrookeWestSample.musicxml';
+// import exampleMxml from '../assets/BrookeWestSample.musicxml';
 import PlaybackControls from '../components/PlaybackControls.vue';
 import TrainingControler from '../components/Training/Controller.vue';
 import Player from '../components/Player/Player.vue';
@@ -46,6 +46,7 @@ import AuthModal from '../components/AuthDialog/index.vue';
 import UploadDialog from '../components/UploadDialog.vue';
 import TransformingMenu from '../components/TransformingMenu/index.vue';
 import { APP_MODE_LEARNING, APP_MODE_PLAYBACK } from '../store/modules/application/consts';
+import { getLinkByScoreId } from '../api/queries';
 
 export default {
   name: 'MxmlPlayer',
@@ -63,10 +64,12 @@ export default {
     UploadDialog,
     TransformingMenu,
   },
+  props: ['id'],
   data() {
     return {
       user: null,
-      xml: exampleMxml,
+      url: null,
+      xml: null,
       dialog: false,
     };
   },
@@ -92,6 +95,20 @@ export default {
     file(newVal) {
       newVal.text().then((text) => { this.xml = text; });
     },
+    id: {
+      handler(newVal) {
+        console.log(Number(newVal));
+        this.$apollo.query(getLinkByScoreId(Number(newVal)))
+          // eslint-disable-next-line arrow-body-style
+          .then(({ data }) => {
+            this.url = data.score.link;
+          }).catch(console.err);
+      },
+      immediate: true,
+    },
+    url(newVal) {
+      this.fetchScore(newVal);
+    },
   },
   methods: {
     ...mapActions([
@@ -115,6 +132,20 @@ export default {
       this.$store.commit('SET_APPLICATION_MODE', APP_MODE_PLAYBACK);
       this.stopPlayback();
       this.dialog = false;
+    },
+    fetchScore(link, callback = () => {}) {
+      fetch(link)
+        .then((response) => {
+          if (!response.ok) {
+            console.error('Fetching score failed.');
+          } else {
+            response.blob().then(
+              blob => this.$store.dispatch('setRemoteFile', blob),
+            );
+          }
+        }).catch(() => {
+          console.error('Network error during score fetching.');
+        }).finally(callback);
     },
   },
 };

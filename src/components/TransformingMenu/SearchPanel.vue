@@ -85,7 +85,7 @@ export default {
         this.isDataLoading = true;
         this.$apollo.query(searchScores(searchPhrase))
           .then((response) => {
-            this.songs = response.data.searchScores;
+            this.songs = response.data.scores;
           })
           .catch(error => console.error(error))
           .finally(() => {

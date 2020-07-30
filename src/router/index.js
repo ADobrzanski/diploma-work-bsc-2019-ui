@@ -1,24 +1,27 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
-import MxmlPlayer from '../views/MusicXmlPlayer.vue';
-import Welcome from '../views/Welcome.vue';
+import Home from '../views/Welcome.vue';
 
 Vue.use(VueRouter);
+
+const Player = () => import('../views/MusicXmlPlayer.vue');
 
 const routes = [
   {
     path: '/',
+    redirect: '/home/all',
+  },
+  {
     name: 'home',
-    component: MxmlPlayer, // TODO: lazy-load player screen
-  },
-  {
-    path: '/welcome',
-    redirect: '/welcome/home',
-  },
-  {
-    path: '/welcome/:option',
+    path: '/home/:category',
     props: true,
-    component: Welcome,
+    component: Home,
+  },
+  {
+    name: 'song',
+    path: '/song/:id',
+    props: true,
+    component: Player,
   },
 ];
 
